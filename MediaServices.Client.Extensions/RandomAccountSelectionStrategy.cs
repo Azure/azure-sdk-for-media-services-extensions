@@ -27,7 +27,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 
         public string SelectAccountForInputAssets(string[] accountNames)
         {
-            return accountNames[_inputRnd.Next(0, accountNames.Length - 1)];
+            return accountNames[_inputRnd.Next(0, accountNames.Length)];
         }
     }
 }

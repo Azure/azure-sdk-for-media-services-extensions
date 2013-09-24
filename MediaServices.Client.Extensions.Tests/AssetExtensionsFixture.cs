@@ -59,7 +59,7 @@ namespace MediaServices.Client.Extensions.Tests
         {
             var folderName = "Media";
             //Defining list of accounts to select from
-            string[] accounts = context.StorageAccounts.Select(c => c.Name).ToArray();
+            string[] accounts = context.StorageAccounts.ToList().Select(c=>c.Name).ToArray();
             this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), accounts, AssetCreationOptions.None);
         }
 

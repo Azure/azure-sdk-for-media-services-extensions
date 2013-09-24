@@ -74,7 +74,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssetExtensions.cs" />
+    <Compile Include="AssetBaseCollectionExtensions.cs" />
     <Compile Include="IAccountSelectionStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomAccountSelectionStrategy.cs" />

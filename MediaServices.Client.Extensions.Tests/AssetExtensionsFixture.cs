@@ -49,8 +49,12 @@ namespace MediaServices.Client.Extensions.Tests
         private CloudMediaContext CreateContext()
         {
             return new CloudMediaContext(
+                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
                 ConfigurationManager.AppSettings["MediaServicesAccountName"],
-                ConfigurationManager.AppSettings["MediaServicesAccountKey"]);
+                ConfigurationManager.AppSettings["MediaServicesAccountKey"],
+                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
+                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
+                );
         }
 
         [TestMethod]

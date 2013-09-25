@@ -40,8 +40,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns></returns>
         public static IAsset Create(this AssetBaseCollection collection,String assetName, string[] storageAccountNames, AssetCreationOptions options)
         {
-            var strategy = collection.GetAccountSelectionStrategy();
-            return collection.Create(assetName, strategy.SelectAccountForInputAssets(storageAccountNames), options);
+            IAccountSelectionStrategy strategy = collection.GetAccountSelectionStrategy();
+            string storageAccount = strategy.SelectAccountForInputAssets(storageAccountNames);
+            return collection.Create(assetName, storageAccount, options);
         }
 
         /// <summary>

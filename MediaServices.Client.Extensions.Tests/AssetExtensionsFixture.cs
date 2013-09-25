@@ -15,6 +15,8 @@
 // </license>
 
 using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace MediaServices.Client.Extensions.Tests
 {
@@ -67,5 +69,31 @@ namespace MediaServices.Client.Extensions.Tests
             this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), accounts, AssetCreationOptions.None);
         }
 
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
+        public void ShouldRedistributeCreationOfAssetBetweenAllStorageAccounts()
+        {
+            var folderName = "Media";
+            //Defining list of accounts to select from
+            string[] accounts = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            Dictionary<string, int> dic = new Dictionary<string, int>();
+            for (int i = 0; i < 50; i++)
+            {
+
+                this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), accounts, AssetCreationOptions.None);
+                if (!dic.ContainsKey(asset.StorageAccountName))
+                {
+                    dic.Add(asset.StorageAccountName, 0);
+                }
+                else
+                {
+                    dic[asset.StorageAccountName] = dic[asset.StorageAccountName] + 1;
+                }
+                Thread.Sleep(200);
+
+            }
+            //Check if all storage accounts participated in redistribution
+            Assert.AreEqual(accounts.Length, dic.Count);
+        }
     }
 }

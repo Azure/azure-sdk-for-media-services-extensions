@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MediaServices.Client.Extensions</RootNamespace>
-    <AssemblyName>MediaServices.Client.Extensions</AssemblyName>
+    <AssemblyName>Microsoft.WindowsAzure.MediaServices.Client.Extensions</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>

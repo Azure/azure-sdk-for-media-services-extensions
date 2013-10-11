@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaServices.Client.Extensions", "MediaServices.Client.Extensions\MediaServices.Client.Extensions.csproj", "{F63A0EFF-C379-46F4-9943-A1C949CE2E21}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{DE33B52C-9B97-4E8E-93BC-F1714810402C}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{515F9E17-9B61-4164-A801-BB1A2C7F1071}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaServices.Client.Extensions.Tests", "MediaServices.Client.Extensions.Tests\MediaServices.Client.Extensions.Tests.csproj", "{E116AA1D-E909-4634-ACAB-AC93FE4F4814}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F63A0EFF-C379-46F4-9943-A1C949CE2E21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F63A0EFF-C379-46F4-9943-A1C949CE2E21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F63A0EFF-C379-46F4-9943-A1C949CE2E21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F63A0EFF-C379-46F4-9943-A1C949CE2E21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E116AA1D-E909-4634-ACAB-AC93FE4F4814}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E116AA1D-E909-4634-ACAB-AC93FE4F4814}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E116AA1D-E909-4634-ACAB-AC93FE4F4814}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E116AA1D-E909-4634-ACAB-AC93FE4F4814}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E116AA1D-E909-4634-ACAB-AC93FE4F4814} = {515F9E17-9B61-4164-A801-BB1A2C7F1071}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\TransientFaultHandling.Core.5.1.1209.1\lib\NET4
+	EndGlobalSection
+EndGlobal

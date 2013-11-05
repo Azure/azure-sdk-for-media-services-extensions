@@ -43,9 +43,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public static IAsset Create(this AssetBaseCollection assets, string assetName, string[] storageAccountNames, AssetCreationOptions options)
         {
             IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
-            string storageAccount = strategy.SelectAccountForInputAssets(storageAccountNames);
+            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
 
-            return assets.Create(assetName, storageAccount, options);
+            return assets.Create(assetName, storageAccountName, options);
         }
 
         /// <summary>
@@ -60,9 +60,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public static Task<IAsset> CreateAsync(this AssetBaseCollection assets, string assetName, string[] storageAccountNames, AssetCreationOptions options, CancellationToken token)
         {
             IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
-            string storageAccount = strategy.SelectAccountForInputAssets(storageAccountNames);
+            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
 
-            return assets.CreateAsync(assetName, storageAccount, options, token);
+            return assets.CreateAsync(assetName, storageAccountName, options, token);
         }
 
         /// <summary>
@@ -70,7 +70,25 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="filePath">The path to the file to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountNames">The storage account names to select from.</param>
+        /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
+        /// <param name="uploadProgressChangedCallback">A callback to report the upload progress of the file.</param>
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
+        public static Task<IAsset> CreateFromFileAsync(this AssetBaseCollection assets, string filePath, string[] storageAccountNames, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
+        {
+            IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
+            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
+
+            return assets.CreateFromFileAsync(filePath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.
+        /// </summary>
+        /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
+        /// <param name="filePath">The path to the file to upload to the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <param name="uploadProgressChangedCallback">A callback to report the upload progress of the file.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
@@ -119,7 +137,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="filePath">The path to the file to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
@@ -139,7 +157,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
         public static Task<IAsset> CreateFromFileAsync(this AssetBaseCollection assets, string filePath, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
         {
-            return assets.CreateFromFileAsync(filePath, null, options, uploadProgressChangedCallback, cancellationToken);
+            return assets.CreateFromFileAsync(filePath, (string)null, options, uploadProgressChangedCallback, cancellationToken);
         }
 
         /// <summary>
@@ -160,7 +178,24 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="filePath">The path to the file to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountNames">The storage account names to select from.</param>
+        /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
+        /// <param name="uploadProgressChangedCallback">A callback to report the upload progress of the file.</param>
+        /// <returns>A new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
+        public static IAsset CreateFromFile(this AssetBaseCollection assets, string filePath, string[] storageAccountNames, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback)
+        {
+            using (Task<IAsset> task = assets.CreateFromFileAsync(filePath, storageAccountNames, options, uploadProgressChangedCallback, CancellationToken.None))
+            {
+                return task.Result;
+            }
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.
+        /// </summary>
+        /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
+        /// <param name="filePath">The path to the file to upload to the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <param name="uploadProgressChangedCallback">A callback to report the upload progress of the file.</param>
         /// <returns>A new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
@@ -177,7 +212,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="filePath">The path to the file to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <returns>A new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
         public static IAsset CreateFromFile(this AssetBaseCollection assets, string filePath, string storageAccountName, AssetCreationOptions options)
@@ -195,7 +230,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
         public static IAsset CreateFromFile(this AssetBaseCollection assets, string filePath, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback)
         {
-            return assets.CreateFromFile(filePath, null, options, uploadProgressChangedCallback);
+            return assets.CreateFromFile(filePath, (string)null, options, uploadProgressChangedCallback);
         }
 
         /// <summary>
@@ -215,7 +250,25 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="folderPath">The path to the folder with the files to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountNames">The storage account names to select from.</param>
+        /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
+        /// <param name="uploadProgressChangedCallback">A callback to report upload progress of the files.</param>
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
+        public static Task<IAsset> CreateFromFolderAsync(this AssetBaseCollection assets, string folderPath, string[] storageAccountNames, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
+        {
+            IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
+            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
+
+            return assets.CreateFromFolderAsync(folderPath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.
+        /// </summary>
+        /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
+        /// <param name="folderPath">The path to the folder with the files to upload to the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <param name="uploadProgressChangedCallback">A callback to report upload progress of the files.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
@@ -276,7 +329,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="folderPath">The path to the folder with the files to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
         /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
@@ -296,7 +349,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
         public static Task<IAsset> CreateFromFolderAsync(this AssetBaseCollection assets, string folderPath, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
         {
-            return assets.CreateFromFolderAsync(folderPath, null, options, uploadProgressChangedCallback, cancellationToken);
+            return assets.CreateFromFolderAsync(folderPath, (string)null, options, uploadProgressChangedCallback, cancellationToken);
         }
 
         /// <summary>
@@ -317,7 +370,24 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="folderPath">The path to the folder with the files to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountNames">The storage account names to select from.</param>
+        /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
+        /// <param name="uploadProgressChangedCallback">A callback to report upload progress of the files.</param>
+        /// <returns>A new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
+        public static IAsset CreateFromFolder(this AssetBaseCollection assets, string folderPath, string[] storageAccountNames, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback)
+        {
+            using (Task<IAsset> task = assets.CreateFromFolderAsync(folderPath, storageAccountNames, options, uploadProgressChangedCallback, CancellationToken.None))
+            {
+                return task.Result;
+            }
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.
+        /// </summary>
+        /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
+        /// <param name="folderPath">The path to the folder with the files to upload to the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <param name="uploadProgressChangedCallback">A callback to report upload progress of the files.</param>
         /// <returns>A new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
@@ -334,7 +404,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <param name="folderPath">The path to the folder with the files to upload to the new <see cref="IAsset"/>.</param>
-        /// <param name="storageAccountName">The name of the Storage Account where to store the new <see cref="IAsset"/>.</param>
+        /// <param name="storageAccountName">The name of the storage account where to store the new <see cref="IAsset"/>.</param>
         /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
         /// <returns>A new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
         public static IAsset CreateFromFolder(this AssetBaseCollection assets, string folderPath, string storageAccountName, AssetCreationOptions options)
@@ -352,7 +422,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
         public static IAsset CreateFromFolder(this AssetBaseCollection assets, string folderPath, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback)
         {
-            return assets.CreateFromFolder(folderPath, null, options, uploadProgressChangedCallback);
+            return assets.CreateFromFolder(folderPath, (string)null, options, uploadProgressChangedCallback);
         }
 
         /// <summary>

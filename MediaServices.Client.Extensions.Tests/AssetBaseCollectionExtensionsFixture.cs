@@ -35,36 +35,61 @@ namespace MediaServices.Client.Extensions.Tests
         public void ShouldCreateAssetWithDefaultAccountSelectionStrategy()
         {
             // Defining list of accounts to select from.
-            string[] accounts = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
 
-            this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), accounts, AssetCreationOptions.None);
+            this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), storageAccountNames, AssetCreationOptions.None);
         }
 
         [TestMethod]
         public void ShouldRedistributeCreationOfAssetBetweenAllStorageAccounts()
         {
             // Defining list of accounts to select from.
-            string[] accounts = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            string[] storageAccountNames = new[] { "account1", "account2", "account3" };
 
-            var dic = new Dictionary<string, int>();
+            var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
+
+            var selectedStorageAccounts = new Dictionary<string, int>();
             for (int i = 0; i < 50; i++)
             {
-                this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), accounts, AssetCreationOptions.None);
-                if (!dic.ContainsKey(asset.StorageAccountName))
+                var selectedStorageAccount = selectionStrategy.SelectAccountForInputAssets(storageAccountNames);
+                if (!selectedStorageAccounts.ContainsKey(selectedStorageAccount))
                 {
-                    dic.Add(asset.StorageAccountName, 0);
+                    selectedStorageAccounts.Add(selectedStorageAccount, 0);
                 }
                 else
                 {
-                    dic[asset.StorageAccountName] += 1;
+                    selectedStorageAccounts[selectedStorageAccount] += 1;
                 }
 
-                this.asset.Delete();
-                this.asset = null;
+                Thread.Sleep(100);
             }
 
             // Check if all storage accounts participated in redistribution.
-            Assert.AreEqual(accounts.Length, dic.Count);
+            Assert.AreEqual(storageAccountNames.Length, selectedStorageAccounts.Keys.Count);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowSelectingStorageAccountIfStorageAccountsArrayIsNull()
+        {
+            // Defining list of accounts to select from.
+            string[] nullStorageAccountNames = null;
+
+            var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
+
+            selectionStrategy.SelectAccountForInputAssets(nullStorageAccountNames);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ShouldThrowSelectingStorageAccountIfStorageAccountsArrayIsEmpty()
+        {
+            // Defining list of accounts to select from.
+            string[] nullStorageAccountNames = new string[0];
+
+            var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
+
+            selectionStrategy.SelectAccountForInputAssets(nullStorageAccountNames);
         }
 
         [TestMethod]
@@ -92,6 +117,29 @@ namespace MediaServices.Client.Extensions.Tests
 
             Assert.IsNotNull(this.asset);
             Assert.AreEqual(fileName, this.asset.Name);
+
+            var assetFiles = this.asset.AssetFiles.ToList().OrderBy(a => a.Name);
+
+            Assert.AreEqual(1, assetFiles.Count());
+            Assert.AreEqual("smallwmv1.wmv", assetFiles.ElementAt(0).Name);
+
+            this.context = this.CreateContext();
+            Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        public void ShouldCreateAssetFromFileWithDefaultAccountSelectionStrategy()
+        {
+            // Defining list of accounts to select from.
+            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            var fileName = "smallwmv1.wmv";
+            this.asset = this.context.Assets.CreateFromFile(fileName, storageAccountNames, AssetCreationOptions.None, null);
+            var assetId = this.asset.Id;
+
+            Assert.IsNotNull(this.asset);
+            Assert.AreEqual(fileName, this.asset.Name);
+            CollectionAssert.Contains(storageAccountNames, this.asset.StorageAccountName);
 
             var assetFiles = this.asset.AssetFiles.ToList().OrderBy(a => a.Name);
 
@@ -187,6 +235,36 @@ namespace MediaServices.Client.Extensions.Tests
 
             Assert.IsNotNull(this.asset);
             Assert.AreEqual(folderName, this.asset.Name);
+
+            var assetFiles = this.asset.AssetFiles.ToList().OrderBy(a => a.Name);
+
+            Assert.AreEqual(3, assetFiles.Count());
+            Assert.AreEqual("dummy.ism", assetFiles.ElementAt(0).Name);
+            Assert.IsTrue(assetFiles.ElementAt(0).IsPrimary);
+            Assert.AreEqual("smallwmv1.wmv", assetFiles.ElementAt(1).Name);
+            Assert.IsFalse(assetFiles.ElementAt(1).IsPrimary);
+            Assert.AreEqual("smallwmv2.wmv", assetFiles.ElementAt(2).Name);
+            Assert.IsFalse(assetFiles.ElementAt(2).IsPrimary);
+
+            this.context = this.CreateContext();
+            Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
+        [DeploymentItem(@"Media\smallwmv2.wmv", "Media")]
+        [DeploymentItem(@"Media\dummy.ism", "Media")]
+        public void ShouldCreateAssetFromFolderWithDefaultAccountSelectionStrategy()
+        {
+            // Defining list of accounts to select from.
+            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            var folderName = "Media";
+            this.asset = this.context.Assets.CreateFromFolder(folderName, storageAccountNames, AssetCreationOptions.None, null);
+            var assetId = this.asset.Id;
+
+            Assert.IsNotNull(this.asset);
+            Assert.AreEqual(folderName, this.asset.Name);
+            CollectionAssert.Contains(storageAccountNames, this.asset.StorageAccountName);
 
             var assetFiles = this.asset.AssetFiles.ToList().OrderBy(a => a.Name);
 

@@ -1,5 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="RandomAccountSelectionStrategy.cs" company="Microsoft">Copyright 2012 Microsoft Corporation</copyright>
+﻿// <copyright file="IAccountSelectionStrategy.cs" company="Microsoft">Copyright 2013 Microsoft Corporation</copyright>
 // <license>
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,14 +13,18 @@
 // limitations under the License.
 // </license>
 
-
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
     /// <summary>
-    /// Defines account selection logic within asset creation scenarious
+    /// Defines account selection logic within asset creation scenarios.
     /// </summary>
     public interface IAccountSelectionStrategy
     {
-        string SelectAccountForInputAssets(string[] accountNames);
+        /// <summary>
+        /// Selects a single storage account name from the <paramref name="storageAccountNames"/> array.
+        /// </summary>
+        /// <param name="storageAccountNames">The storage account names to select from.</param>
+        /// <returns>A single storage account name from the <paramref name="storageAccountNames"/> array.</returns>
+        string SelectAccountForInputAssets(string[] storageAccountNames);
     }
 }

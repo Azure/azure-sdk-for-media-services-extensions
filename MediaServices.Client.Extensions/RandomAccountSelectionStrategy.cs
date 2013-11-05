@@ -1,5 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="RandomAccountSelectionStrategy.cs" company="Microsoft">Copyright 2012 Microsoft Corporation</copyright>
+﻿// <copyright file="RandomAccountSelectionStrategy.cs" company="Microsoft">Copyright 2013 Microsoft Corporation</copyright>
 // <license>
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,20 +13,35 @@
 // limitations under the License.
 // </license>
 
-using System;
-
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
+    using System;
+
     /// <summary>
-    /// Defines simple pseudo random account selection based on Random class implementation
+    /// Represents simple pseudo random account selection based on the <see cref="System.Random"/> class.
     /// </summary>
     public class RandomAccountSelectionStrategy : IAccountSelectionStrategy
     {
-        private readonly Random _inputRnd = new Random();
+        private readonly Random random = new Random();
 
-        public string SelectAccountForInputAssets(string[] accountNames)
+        /// <summary>
+        /// Selects a single storage account name from the <paramref name="storageAccountNames"/> array using a pseudo random selection based on the <see cref="System.Random"/> class.
+        /// </summary>
+        /// <param name="storageAccountNames">The storage account names to select from.</param>
+        /// <returns>A single storage account name from the <paramref name="storageAccountNames"/> array using a pseudo random selection based on the <see cref="System.Random"/> class.</returns>
+        public string SelectAccountForInputAssets(string[] storageAccountNames)
         {
-            return accountNames[_inputRnd.Next(0, accountNames.Length)];
+            if (storageAccountNames == null)
+            {
+                throw new ArgumentNullException("storageAccountNames", "The storage account names array cannot be null."); 
+            }
+
+            if (storageAccountNames.Length == 0)
+            {
+                throw new ArgumentException("The storage account names array cannot be empty.", "storageAccountNames");
+            }
+
+            return storageAccountNames[this.random.Next(0, storageAccountNames.Length)];
         }
     }
 }

@@ -25,6 +25,6 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="storageAccountNames">The storage account names to select from.</param>
         /// <returns>A single storage account name from the <paramref name="storageAccountNames"/> array.</returns>
-        string SelectAccountForInputAssets(string[] storageAccountNames);
+        string SelectAccountForAssets(string[] storageAccountNames);
     }
 }

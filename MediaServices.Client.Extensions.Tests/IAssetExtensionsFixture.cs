@@ -455,12 +455,16 @@ namespace MediaServices.Client.Extensions.Tests
                 Assert.AreEqual(100, downloadProgressChangedEventArgs.Progress);
             }
         }
-        
+
         private CloudMediaContext CreateContext()
         {
             return new CloudMediaContext(
-                ConfigurationManager.AppSettings["MediaServicesAccountName"],
-                ConfigurationManager.AppSettings["MediaServicesAccountKey"]);
+                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
+                ConfigurationManager.AppSettings["MediaServiceAccountName"],
+                ConfigurationManager.AppSettings["MediaServiceAccountKey"],
+                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
+                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
+                );
         }
     }
 }

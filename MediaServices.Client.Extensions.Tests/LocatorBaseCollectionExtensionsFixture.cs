@@ -121,8 +121,12 @@ namespace MediaServices.Client.Extensions.Tests
         private CloudMediaContext CreateContext()
         {
             return new CloudMediaContext(
-                ConfigurationManager.AppSettings["MediaServicesAccountName"],
-                ConfigurationManager.AppSettings["MediaServicesAccountKey"]);
+                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
+                ConfigurationManager.AppSettings["MediaServiceAccountName"],
+                ConfigurationManager.AppSettings["MediaServiceAccountKey"],
+                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
+                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
+                );
         }
     }
 }

@@ -51,7 +51,7 @@ namespace MediaServices.Client.Extensions.Tests
             var selectedStorageAccounts = new Dictionary<string, int>();
             for (int i = 0; i < 50; i++)
             {
-                var selectedStorageAccount = selectionStrategy.SelectAccountForInputAssets(storageAccountNames);
+                var selectedStorageAccount = selectionStrategy.SelectAccountForAssets(storageAccountNames);
                 if (!selectedStorageAccounts.ContainsKey(selectedStorageAccount))
                 {
                     selectedStorageAccounts.Add(selectedStorageAccount, 0);
@@ -77,7 +77,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
 
-            selectionStrategy.SelectAccountForInputAssets(nullStorageAccountNames);
+            selectionStrategy.SelectAccountForAssets(nullStorageAccountNames);
         }
 
         [TestMethod]
@@ -89,7 +89,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
 
-            selectionStrategy.SelectAccountForInputAssets(nullStorageAccountNames);
+            selectionStrategy.SelectAccountForAssets(nullStorageAccountNames);
         }
 
         [TestMethod]
@@ -354,8 +354,12 @@ namespace MediaServices.Client.Extensions.Tests
         private CloudMediaContext CreateContext()
         {
             return new CloudMediaContext(
-                ConfigurationManager.AppSettings["MediaServicesAccountName"],
-                ConfigurationManager.AppSettings["MediaServicesAccountKey"]);
+                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
+                ConfigurationManager.AppSettings["MediaServiceAccountName"],
+                ConfigurationManager.AppSettings["MediaServiceAccountKey"],
+                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
+                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
+                );
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     {
         internal static readonly TimeSpan DefaultAccessPolicyDuration = TimeSpan.FromDays(1);
 
-        private static readonly Lazy<IAccountSelectionStrategy> DefaultAccountSelectionStrategy = new Lazy<IAccountSelectionStrategy>(() => new RandomAccountSelectionStrategy());
+        private static IAccountSelectionStrategy CurrentSelectionStrategy = new RandomAccountSelectionStrategy();
 
         /// <summary>
         /// Returns a new empty <see cref="IAsset"/> within one selected storage account from <paramref name="storageAccountNames"/> based on the default <see cref="IAccountSelectionStrategy"/>.
@@ -43,7 +43,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public static IAsset Create(this AssetBaseCollection assets, string assetName, string[] storageAccountNames, AssetCreationOptions options)
         {
             IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
-            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
+            string storageAccountName = strategy.SelectAccountForAssets(storageAccountNames);
 
             return assets.Create(assetName, storageAccountName, options);
         }
@@ -60,7 +60,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public static Task<IAsset> CreateAsync(this AssetBaseCollection assets, string assetName, string[] storageAccountNames, AssetCreationOptions options, CancellationToken token)
         {
             IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
-            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
+            string storageAccountName = strategy.SelectAccountForAssets(storageAccountNames);
 
             return assets.CreateAsync(assetName, storageAccountName, options, token);
         }
@@ -78,7 +78,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public static Task<IAsset> CreateFromFileAsync(this AssetBaseCollection assets, string filePath, string[] storageAccountNames, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
         {
             IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
-            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
+            string storageAccountName = strategy.SelectAccountForAssets(storageAccountNames);
 
             return assets.CreateFromFileAsync(filePath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);
         }
@@ -258,7 +258,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public static Task<IAsset> CreateFromFolderAsync(this AssetBaseCollection assets, string folderPath, string[] storageAccountNames, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
         {
             IAccountSelectionStrategy strategy = assets.GetAccountSelectionStrategy();
-            string storageAccountName = strategy.SelectAccountForInputAssets(storageAccountNames);
+            string storageAccountName = strategy.SelectAccountForAssets(storageAccountNames);
 
             return assets.CreateFromFolderAsync(folderPath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);
         }
@@ -438,13 +438,28 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         }
 
         /// <summary>
-        /// Returns the default <see cref="IAccountSelectionStrategy"/> implementation used for selecting storage accounts for new assets.
+        /// Returns the current <see cref="IAccountSelectionStrategy"/> implementation used for selecting storage accounts for new assets.
         /// </summary>
         /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
         /// <returns>The default <see cref="IAccountSelectionStrategy"/> implementation used for selecting storage accounts for new assets.</returns>
         public static IAccountSelectionStrategy GetAccountSelectionStrategy(this AssetBaseCollection assets)
         {
-            return DefaultAccountSelectionStrategy.Value;
+            return CurrentSelectionStrategy;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="IAccountSelectionStrategy"/> implementation used for selecting storage accounts for new assets.
+        /// </summary>
+        /// <param name="collection">The asset collection.</param>
+        /// <param name="accountSelectionStrategy">The IAccountSelectionStrategy to set.</param>
+        public static void SetAccountSelectionStrategy(this AssetBaseCollection collection, IAccountSelectionStrategy accountSelectionStrategy)
+        {
+            if (accountSelectionStrategy == null)
+            {
+                throw new ArgumentNullException("accountSelectionStrategy");
+            }
+
+            CurrentSelectionStrategy = accountSelectionStrategy;
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// </summary>
         /// <param name="storageAccountNames">The storage account names to select from.</param>
         /// <returns>A single storage account name from the <paramref name="storageAccountNames"/> array using a pseudo random selection based on the <see cref="System.Random"/> class.</returns>
-        public string SelectAccountForInputAssets(string[] storageAccountNames)
+        public string SelectAccountForAssets(string[] storageAccountNames)
         {
             if (storageAccountNames == null)
             {

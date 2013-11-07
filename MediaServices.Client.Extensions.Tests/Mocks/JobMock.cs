@@ -93,7 +93,7 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task SubmitAsync()
+        public Task<IJob> SubmitAsync()
         {
             throw new NotImplementedException();
         }
@@ -103,7 +103,7 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task UpdateAsync()
+        public Task<IJob> UpdateAsync()
         {
             throw new NotImplementedException();
         }

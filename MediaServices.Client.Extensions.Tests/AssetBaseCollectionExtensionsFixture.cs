@@ -18,7 +18,6 @@ namespace MediaServices.Client.Extensions.Tests
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -35,7 +34,7 @@ namespace MediaServices.Client.Extensions.Tests
         public void ShouldCreateAssetWithDefaultAccountSelectionStrategy()
         {
             // Defining list of accounts to select from.
-            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            string[] storageAccountNames = this.context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
 
             this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), storageAccountNames, AssetCreationOptions.None);
         }
@@ -132,7 +131,7 @@ namespace MediaServices.Client.Extensions.Tests
         public void ShouldCreateAssetFromFileWithDefaultAccountSelectionStrategy()
         {
             // Defining list of accounts to select from.
-            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            string[] storageAccountNames = this.context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
             var fileName = "smallwmv1.wmv";
             this.asset = this.context.Assets.CreateFromFile(fileName, storageAccountNames, AssetCreationOptions.None, null);
             var assetId = this.asset.Id;
@@ -257,7 +256,7 @@ namespace MediaServices.Client.Extensions.Tests
         public void ShouldCreateAssetFromFolderWithDefaultAccountSelectionStrategy()
         {
             // Defining list of accounts to select from.
-            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            string[] storageAccountNames = this.context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
             var folderName = "Media";
             this.asset = this.context.Assets.CreateFromFolder(folderName, storageAccountNames, AssetCreationOptions.None, null);
             var assetId = this.asset.Id;
@@ -350,7 +349,5 @@ namespace MediaServices.Client.Extensions.Tests
             Assert.AreEqual(expected.Length, uploadProgressChangedEventArgs.TotalBytes);
             Assert.AreEqual(100, uploadProgressChangedEventArgs.Progress);
         }
-
-        
     }
 }

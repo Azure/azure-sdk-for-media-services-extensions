@@ -68,7 +68,5 @@ namespace MediaServices.Client.Extensions.Tests
         {
             this.context = TestHelper.CreateContext();
         }
-
-       
     }
 }

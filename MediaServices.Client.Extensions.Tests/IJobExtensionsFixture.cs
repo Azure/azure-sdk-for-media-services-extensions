@@ -16,7 +16,6 @@
 namespace MediaServices.Client.Extensions.Tests
 {
     using System;
-    using System.Configuration;
     using System.Threading;
     using MediaServices.Client.Extensions.Tests.Mocks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -248,8 +247,6 @@ namespace MediaServices.Client.Extensions.Tests
             {
                 this.outputAsset.Delete();
             }
-        }
-
-       
+        }       
     }
 }

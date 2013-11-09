@@ -8,18 +8,38 @@ A NuGet package that contains a set of extension methods and helpers for the Win
 Install the [WindowsAzure.MediaServices.Extensions](https://www.nuget.org/packages/WindowsAzure.MediaServices.Extensions) Nuget package by running `Install-Package WindowsAzure.MediaServices.Extensions` in the [Package Manager Console](http://docs.nuget.org/docs/start-here/using-the-package-manager-console/).
 
 After installing the package, a **MediaServicesExtensions** folder will be added to your project's root directory containing the following files:
-- AssetBaseCollectionExtensions.cs: Contains extension methods and helpers for the [AssetBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection.aspx) class.
-- IAssetExtensions.cs: Contains extension methods and helpers for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface.
-- JobBaseCollectionExtensions.cs: Contains extension methods and helpers for the [JobBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.jobbasecollection.aspx) class.
-- IJobExtensions.cs: Contains extension methods and helpers for the [IJob](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ijob.aspx) interface.
-- LocatorBaseCollectionExtensions.cs: Contains extension methods and helpers for the [LocatorBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.locatorbasecollection.aspx) class.
-- ILocatorExtensions.cs: Contains extension methods for to the [ILocator](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ilocator.aspx) interface.
-- MediaProcessorBaseCollectionExtensions.cs: Contains extension methods and helpers for the [MediaProcessorBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.mediaprocessorbasecollection.aspx) class.
-- MediaEncoderTaskPresetStrings.cs: Contains constants with the names of the available [Task Preset Strings for the Windows Azure Media Encoder](http://msdn.microsoft.com/en-us/library/windowsazure/jj129582.aspx).
-- MediaProcessorNames.cs: Contains constants with the names of the available [Media Processors](http://msdn.microsoft.com/en-us/library/windowsazure/jj129580.aspx).
-- MediaServicesExceptionParser.cs: Contains helper methods to parse Windows Azure Media Services error messages in XML format.
+- _AssetBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [AssetBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection.aspx) class.
+- _IAssetExtensions.cs_: Contains extension methods and helpers for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface.
+- _JobBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [JobBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.jobbasecollection.aspx) class.
+- _IJobExtensions.cs_: Contains extension methods and helpers for the [IJob](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ijob.aspx) interface.
+- _LocatorBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [LocatorBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.locatorbasecollection.aspx) class.
+- _ILocatorExtensions.cs_: Contains extension methods for to the [ILocator](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ilocator.aspx) interface.
+- _MediaProcessorBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [MediaProcessorBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.mediaprocessorbasecollection.aspx) class.
+- _MediaEncoderTaskPresetStrings.cs_: Contains constants with the names of the available [Task Preset Strings for the Windows Azure Media Encoder](http://msdn.microsoft.com/en-us/library/windowsazure/jj129582.aspx).
+- _MediaProcessorNames.cs_: Contains constants with the names of the available [Media Processors](http://msdn.microsoft.com/en-us/library/windowsazure/jj129580.aspx).
+- _IAccountSelectionStrategy.cs_: Defines account selection logic within asset creation scenarios.
+- _RandomAccountSelectionStrategy.cs_: Represents a simple pseudo random account selection based on the [Random](http://msdn.microsoft.com/library/system.random.aspx) class.
+- _MediaServicesExceptionParser.cs_: Contains helper methods to parse Windows Azure Media Services error messages in XML format.
 
 ## Extension Methods and Helpers available
+
+## Create an empty Asset using a selection strategy for the Storage account
+Create a new empty asset within one selected Storage account based on the default account selection strategy using a single extension method for the [AssetBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection.aspx) class. There is an additional overload with _async_ support.
+```csharp
+CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+
+// Get a list of the available Storage accounts to select from.
+string[] storageAccountNames = this.context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+
+// The asset name.
+string assetName = "MyAssetName";
+
+// The options for creating the new asset.
+AssetCreationOptions assetCreationOptions = AssetCreationOptions.None;
+
+// Create a new asset and upload a local file using a single extension method.
+IAsset asset = context.Assets.Create(assetName, storageAccountNames, assetCreationOptions);
+```
 
 ### Create an Asset from a single local file
 Create a new asset by uploading a local file using a single extension method for the [AssetBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection.aspx) class. There are additional overloads with different parameters and _async_ support.

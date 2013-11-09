@@ -231,7 +231,7 @@ namespace MediaServices.Client.Extensions.Tests
         [TestInitialize]
         public void Initialize()
         {
-            this.context = this.CreateContext();
+            this.context = TestHelper.CreateContext();
             this.asset = null;
             this.outputAsset = null;
         }
@@ -250,11 +250,6 @@ namespace MediaServices.Client.Extensions.Tests
             }
         }
 
-        private CloudMediaContext CreateContext()
-        {
-            return new CloudMediaContext(
-                ConfigurationManager.AppSettings["MediaServicesAccountName"],
-                ConfigurationManager.AppSettings["MediaServicesAccountKey"]);
-        }
+       
     }
 }

@@ -26,7 +26,7 @@ namespace MediaServices.Client.Extensions.Tests
         [TestMethod]
         public void ShoudParseMediaServicesExceptionErrorMessage()
         {
-            var context = this.CreateContext();
+            var context = TestHelper.CreateContext();
             var asset = context.Assets.Create("EmptyAsset", AssetCreationOptions.None);
 
             try
@@ -46,7 +46,7 @@ namespace MediaServices.Client.Extensions.Tests
         [TestMethod]
         public void ShoudParseMediaServicesExceptionErrorMessageFromAggregateException()
         {
-            var context = this.CreateContext();
+            var context = TestHelper.CreateContext();
             var asset = context.Assets.Create("EmptyAsset", AssetCreationOptions.None);
 
             try
@@ -80,11 +80,6 @@ namespace MediaServices.Client.Extensions.Tests
             Assert.IsNull(parsedException);
         }
 
-        private CloudMediaContext CreateContext()
-        {
-            return new CloudMediaContext(
-                ConfigurationManager.AppSettings["MediaServicesAccountName"],
-                ConfigurationManager.AppSettings["MediaServicesAccountKey"]);
-        }
+       
     }
 }

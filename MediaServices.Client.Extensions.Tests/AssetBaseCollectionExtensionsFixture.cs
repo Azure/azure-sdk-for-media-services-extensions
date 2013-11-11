@@ -16,6 +16,7 @@
 namespace MediaServices.Client.Extensions.Tests
 {
     using System;
+    using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Configuration;
@@ -34,10 +35,9 @@ namespace MediaServices.Client.Extensions.Tests
         [TestMethod]
         public void ShouldCreateAssetWithDefaultAccountSelectionStrategy()
         {
-            // Defining list of accounts to select from.
-            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
-
-            this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), storageAccountNames, AssetCreationOptions.None);
+            IAccountSelectionStrategy selectionStrategy = RandomAccountSelectionStrategy.FromAccounts(context);
+            
+            this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), selectionStrategy, AssetCreationOptions.None);
         }
 
         [TestMethod]
@@ -46,12 +46,12 @@ namespace MediaServices.Client.Extensions.Tests
             // Defining list of accounts to select from.
             string[] storageAccountNames = new[] { "account1", "account2", "account3" };
 
-            var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
+            IAccountSelectionStrategy selectionStrategy = new RandomAccountSelectionStrategy(storageAccountNames);
 
             var selectedStorageAccounts = new Dictionary<string, int>();
             for (int i = 0; i < 50; i++)
             {
-                var selectedStorageAccount = selectionStrategy.SelectAccountForAssets(storageAccountNames);
+                var selectedStorageAccount = selectionStrategy.SelectAccountForAssets();
                 if (!selectedStorageAccounts.ContainsKey(selectedStorageAccount))
                 {
                     selectedStorageAccounts.Add(selectedStorageAccount, 0);
@@ -70,26 +70,22 @@ namespace MediaServices.Client.Extensions.Tests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ShouldThrowSelectingStorageAccountIfStorageAccountsArrayIsNull()
+        public void ShouldThrowCreatingStrategyIfStorageAccountsArrayIsNull()
         {
             // Defining list of accounts to select from.
             string[] nullStorageAccountNames = null;
 
-            var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
-
-            selectionStrategy.SelectAccountForAssets(nullStorageAccountNames);
+            IAccountSelectionStrategy strategy = new RandomAccountSelectionStrategy(nullStorageAccountNames);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ShouldThrowSelectingStorageAccountIfStorageAccountsArrayIsEmpty()
+        public void ShouldThrowCreatingStrategyIfStorageAccountsArrayIsEmpty()
         {
             // Defining list of accounts to select from.
             string[] nullStorageAccountNames = new string[0];
 
-            var selectionStrategy = this.context.Assets.GetAccountSelectionStrategy();
-
-            selectionStrategy.SelectAccountForAssets(nullStorageAccountNames);
+            IAccountSelectionStrategy strategy = new RandomAccountSelectionStrategy(nullStorageAccountNames);
         }
 
         [TestMethod]
@@ -131,15 +127,16 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv")]
         public void ShouldCreateAssetFromFileWithDefaultAccountSelectionStrategy()
         {
-            // Defining list of accounts to select from.
-            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
+
             var fileName = "smallwmv1.wmv";
-            this.asset = this.context.Assets.CreateFromFile(fileName, storageAccountNames, AssetCreationOptions.None, null);
+            this.asset = this.context.Assets.CreateFromFile(fileName, strategy, AssetCreationOptions.None, null);
             var assetId = this.asset.Id;
 
             Assert.IsNotNull(this.asset);
             Assert.AreEqual(fileName, this.asset.Name);
-            CollectionAssert.Contains(storageAccountNames, this.asset.StorageAccountName);
+            IList<string> storageAccountNames = strategy.GetStorageAccounts();
+            CollectionAssert.Contains((ICollection)storageAccountNames, this.asset.StorageAccountName);
 
             var assetFiles = this.asset.AssetFiles.ToList().OrderBy(a => a.Name);
 
@@ -256,15 +253,16 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\dummy.ism", "Media")]
         public void ShouldCreateAssetFromFolderWithDefaultAccountSelectionStrategy()
         {
-            // Defining list of accounts to select from.
-            string[] storageAccountNames = context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
+
             var folderName = "Media";
-            this.asset = this.context.Assets.CreateFromFolder(folderName, storageAccountNames, AssetCreationOptions.None, null);
+            this.asset = this.context.Assets.CreateFromFolder(folderName, strategy, AssetCreationOptions.None, null);
             var assetId = this.asset.Id;
 
             Assert.IsNotNull(this.asset);
             Assert.AreEqual(folderName, this.asset.Name);
-            CollectionAssert.Contains(storageAccountNames, this.asset.StorageAccountName);
+            IList<string> storageAccountNames = strategy.GetStorageAccounts();
+            CollectionAssert.Contains((ICollection)storageAccountNames, this.asset.StorageAccountName);
 
             var assetFiles = this.asset.AssetFiles.ToList().OrderBy(a => a.Name);
 

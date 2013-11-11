@@ -40,36 +40,16 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     /// </summary>
     public class CapacityBasedAccountSelectionStrategy : BaseEntity<IAccountSelectionStrategy>, IAccountSelectionStrategy
     {
-        private const long twoHundredTB = 219902325555200; // 200 * 1024^4 or 200TB
-        private const long oneHundredEightyTB = 197912092999680; // 180 * 1024^4 or 180TB
+        public const long twoHundredTB = 219902325555200; // 200 * 1024^4 or 200TB
+        public const long oneHundredEightyTB = 197912092999680; // 180 * 1024^4 or 180TB
         private Random _rand = new Random();
-        private long _maximumStorageAccountCapacity;
+        private List<CapacityBaseAccountSelectionStrategyListEntry> _weightedList;
 
-        public Random Random
-        {
-            get { return _rand; }
-            set { _rand = value; }
-        }
-
-        public long MaximumStorageAccountCapacity
-        {
-            get { return _maximumStorageAccountCapacity; }
-            set { SetMaximumStorageAccountCapacity(value); }
-        }
-
-        public bool IncludeAccountsWithNoCapacityData { get; set; }
-
+        /// <summary>
+        /// Constructor for the CapacityBasedAccountSelectionStrategy class
+        /// </summary>
+        /// <param name="mediaContextBase">MediaContextBase instance to query IStorageAccount entities</param>
         public CapacityBasedAccountSelectionStrategy(MediaContextBase mediaContextBase)
-            : this(mediaContextBase, oneHundredEightyTB, false)
-        {
-        }
-
-        public CapacityBasedAccountSelectionStrategy(MediaContextBase mediaContextBase, bool includeAccountsWithNoCapacityData)
-            : this(mediaContextBase, oneHundredEightyTB, includeAccountsWithNoCapacityData)
-        {
-        }
-
-        public CapacityBasedAccountSelectionStrategy(MediaContextBase mediaContextBase, long maximumStorageAccountCapacity, bool includeAccountsWithNoCapacityData)
         {
             if (mediaContextBase == null)
             {
@@ -77,18 +57,168 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             }
 
             SetMediaContext(mediaContextBase);
-            SetMaximumStorageAccountCapacity(maximumStorageAccountCapacity);
-            IncludeAccountsWithNoCapacityData = includeAccountsWithNoCapacityData;
+            _weightedList = new List<CapacityBaseAccountSelectionStrategyListEntry>();
         }
 
-        private void SetMaximumStorageAccountCapacity(long maximumStorageAccountCapacity)
+        /// <summary>
+        /// Creates a new instance of the CapacityBasedAccountSelectionStrategy class and then enumerates all of the storage accounts in the 
+        /// given MediaContextBase.StorageAccounts collection and adds each account to the classes internal list.  The includeAccountsWithNoCapacityData
+        /// flag is used if no capacity data is available.  If includeAccountsWithNoCapacityData is true and no data is available, then the storage 
+        /// account is considered to have its full capacity (maximumStorageAccountCapacity) available.  If includeAccountsWithNoCapacityData 
+        /// is false and no data is available, then the storage account is considered to have no capacity (0) available.  If data is available,
+        /// then the IStorageAccount.BytesUsed value is subtracted from maximumStorageAccountCapacity to get the available capacity.  The 
+        /// storageAccountNames list is used to filter the results of the MediaContextBase.StorageAccounts collection.  Account names that
+        /// are not on the list but in the enumeration will be skipped.  Names that are on the list but not in the enumeration will not be
+        /// added.  Pass null (the default) to include all of the enumerated accounts.
+        /// </summary>
+        /// <param name="mediaContextBase">MediaContextBase used to enumerate the IStorageAccount instances to add</param>
+        /// <param name="includeAccountsWithNoCapacityData">Boolean value telling the method whether accounts should be used if no capacity data is available.</param>
+        /// <param name="maximumStorageAccountCapacity">Maximum storage account capacity for the given storage accounts.</param>
+        /// <param name="storageAccountNames">List of storage account names to include.</param>
+        /// <returns></returns>
+        public static CapacityBasedAccountSelectionStrategy FromAccounts(MediaContextBase mediaContextBase, bool includeAccountsWithNoCapacityData = false, long maximumStorageAccountCapacity = oneHundredEightyTB, string[] storageAccountNames = null)
         {
-            if ((maximumStorageAccountCapacity > twoHundredTB) || (maximumStorageAccountCapacity <= 0))
+            if (null == mediaContextBase)
             {
-                throw new ArgumentOutOfRangeException("maximumStorageAccountCapacity", "The maximum storage account capacity must be between 1 and 219902325555200");
+                throw new ArgumentNullException("mediaContextBase");
             }
 
-            _maximumStorageAccountCapacity = maximumStorageAccountCapacity;
+            CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(mediaContextBase);                      
+
+            foreach (IStorageAccount storageAccount in GetAllStorageAccounts(mediaContextBase))
+            {
+                if ((storageAccountNames == null) || (storageAccountNames.Contains(storageAccount.Name)))
+                {
+                    strategy.AddStorageAccount(storageAccount, includeAccountsWithNoCapacityData, maximumStorageAccountCapacity);
+                }
+            }
+
+            return strategy;
+        }
+
+        /// <summary>
+        /// Adds a CapacityBaseAccountSelectionStrategyListEntry to the classes internal list.  The considerFullCapacityIfNoDataAvailable flag is
+        /// used if no capacity data is available.  If considerFullCapacityIfNoDataAvailable is true and no data is available, then the storage 
+        /// account is considered to have its full capacity (maximumStorageAccountCapacity) available.  If considerFullCapacityIfNoDataAvailable 
+        /// is false and no data is available, then the storage account is considered to have no capacity (0) available.  If data is available,
+        /// then the IStorageAccount.BytesUsed value is subtracted from maximumStorageAccountCapacity to get the available capacity.
+        /// </summary>
+        /// <param name="storageAccount">IStorageAccount instance to add</param>
+        /// <param name="considerAccountWithNoDataToBeEmpty">Boolean value telling the method whether accounts should be considered to be empty (and can be used for new assets) if no capacity data is available.</param>
+        /// <param name="maximumStorageAccountCapacity">Maximum storage account capacity for the given storage account.</param>
+        public void AddStorageAccount(IStorageAccount storageAccount, bool considerAccountWithNoDataToBeEmpty = false, long maximumStorageAccountCapacity = oneHundredEightyTB)
+        {
+            // make sure we don't already have this storage account in the list
+            if (_weightedList.Where(item => item.StorageAccount.Name == storageAccount.Name).Count() > 0)
+            {
+                throw new ArgumentException("storageAccount", "The storage account already exists in the storage account list.");
+            }
+
+            CapacityBaseAccountSelectionStrategyListEntry entry = GetListEntry(storageAccount, considerAccountWithNoDataToBeEmpty, maximumStorageAccountCapacity);
+
+            // As we build the list, add up the AvailableCapacity values so we know the end range of each entry
+            long currentEndOfRangeForList = GetCurrentTotalWeight();
+            entry.EndOfRange = currentEndOfRangeForList + entry.AvailableCapacity;
+
+            _weightedList.Add(entry);
+        }
+
+        /// <summary>
+        /// Adds a CapacityBaseAccountSelectionStrategyListEntry to the classes internal list.  The given storage account name is used to look 
+        /// up the IStorageAccount entity.  The considerFullCapacityIfNoDataAvailable flag is used if no capacity data is available.  If 
+        /// considerFullCapacityIfNoDataAvailable is true and no data is available, then the storage account is considered to have its full 
+        /// capacity (maximumStorageAccountCapacity) available.  If considerFullCapacityIfNoDataAvailable is false and no data is available, 
+        /// then the storage account is considered to have no capacity (0) available.  If data is available, then the IStorageAccount.BytesUsed 
+        /// value is subtracted from maximumStorageAccountCapacity to get the available capacity.
+        /// </summary>
+        /// <param name="storageAccountName">Name of the storage account to add</param>
+        /// <param name="considerFullCapacityIfNoDataAvailable">Boolean value telling the method whether accounts should be considered to have full capacity if no capacity data is available.</param>
+        /// <param name="maximumStorageAccountCapacity">Maximum storage account capacity for the given storage account.</param>
+        public void AddStorageAccountByName(string storageAccountName, bool considerFullCapacityIfNoDataAvailable = false, long maximumStorageAccountCapacity = oneHundredEightyTB)
+        {
+            if (String.IsNullOrWhiteSpace(storageAccountName))
+            {
+                throw new ArgumentException("storageAccountName", "storageAccountName must not be null or empty");
+            }
+
+            IStorageAccount storageAccount = GetStorageAccount(storageAccountName);
+
+            if (storageAccount == null)
+            {
+                string message = string.Format("Unable to find a storage account with name \"{0}\"", storageAccountName);
+                throw new ArgumentException(message, "storageAccountName");
+            }
+            else
+            {
+                AddStorageAccount(storageAccount, considerFullCapacityIfNoDataAvailable, maximumStorageAccountCapacity);
+            }
+        }
+
+        /// <summary>
+        /// Implementation of the IAccountSelectionStrategy method SelectAccountForAssets
+        /// </summary>
+        /// <returns>The name of the storage account to use for creating a new asset.</returns>
+        public string SelectAccountForAssets()
+        {
+            if (_weightedList.Count == 0)
+            {
+                throw new InvalidOperationException("No storage accounts configured to select from.");
+            }
+
+            return RandomlySelectFromWeightedList(_weightedList);
+        }
+
+        /// <summary>
+        /// Get the list of CapacityBaseAccountSelectionStrategyListEntry that contain the storage accounts to select from along
+        /// with their calculated available capacity.
+        /// </summary>
+        /// <returns>IList of CapacityBaseAccountSelectionStrategyListEntrys</returns>
+        public IList<CapacityBaseAccountSelectionStrategyListEntry> GetStorageAccounts()
+        {
+            return _weightedList.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Property to get or set the <see cref="System.Random"/> instance used by the class.
+        /// </summary>
+        public Random Random
+        {
+            get { return _rand; }
+            set { _rand = value; }
+        }
+
+        private static CapacityBaseAccountSelectionStrategyListEntry GetListEntry(IStorageAccount storageAccount, bool considerAccountWithNoDataToBeEmpty, long maximumStorageAccountCapacity)
+        {
+            long bytesUsed = 0;
+            if (storageAccount.BytesUsed.HasValue)
+            {
+                bytesUsed = storageAccount.BytesUsed.Value;
+            }
+            else
+            {
+                //
+                //  If considerAccountWithNoDataToBeEmpty is true, then we want to consider the
+                //  storage account to have a BytesUsed of zero (the account is empty).  If the
+                //  considerAccountWithNoDataToBeEmpty is false, then we want to consider the
+                //  storage account to have a BytesUsed of maximumStorageAccountCapacity (the
+                //  account is full and it won't be used for new assets).
+                //
+                if (considerAccountWithNoDataToBeEmpty)
+                {
+                    bytesUsed = 0;
+                }
+                else
+                {
+                    bytesUsed = maximumStorageAccountCapacity;
+                }
+            }
+
+            long bytesAvailable = maximumStorageAccountCapacity - bytesUsed;
+
+            // If the storage capacity is more than the max, then we give it a weight of 0 (it won't be selected)
+            bytesAvailable = Math.Max(bytesAvailable, 0);
+
+            return new CapacityBaseAccountSelectionStrategyListEntry(storageAccount, bytesAvailable);
         }
 
         private long RandomLongInclusive(long min, long max)
@@ -110,103 +240,58 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             return (min + Convert.ToInt64(truncatedValue));
         }
 
-        private string RandomlySelectFromWeightedList(List<Tuple<string, long>> weightedItems)
+        private long GetCurrentTotalWeight()
+        {
+            long returnValue = 0;
+
+            if (_weightedList.Count > 0)
+            {
+                returnValue = _weightedList[_weightedList.Count - 1].EndOfRange;
+            }
+
+            return returnValue;
+        }
+
+        private string RandomlySelectFromWeightedList(List<CapacityBaseAccountSelectionStrategyListEntry> weightedItems)
         {
             string selectedStorageAccount = null;
 
             // first add up all of the weights
-            long totalOfAllWeights = 0;
-            for (int i = 0; i < weightedItems.Count; i++)
-            {
-                totalOfAllWeights += weightedItems[i].Item2;
-            }
+            long totalOfAllWeights = GetCurrentTotalWeight();
 
             if (totalOfAllWeights == 0)
             {
-                throw new ArgumentException("Unable to find any storage accounts with available capacity!");
+                throw new InvalidOperationException("Unable to find any storage accounts with available capacity!");
             }
 
             // next randomly select a value from 1 to the totalOfAllWeights
             long randomLong = RandomLongInclusive(1, totalOfAllWeights);
 
             // now figure out which storage account the randomly selected value lives in
-            long runningTotal = 0;
             for (int i = 0; i < weightedItems.Count; i++)
             {
-                long currentWeight = weightedItems[i].Item2;
-                if (randomLong <= (runningTotal + currentWeight))
+                if (randomLong <= weightedItems[i].EndOfRange)
                 {
-                    selectedStorageAccount = weightedItems[i].Item1;
+                    selectedStorageAccount = weightedItems[i].StorageAccount.Name;
                     break;
-                }
-                else
-                {
-                    runningTotal += currentWeight;
                 }
             }
 
             return selectedStorageAccount;
         }
 
-        protected IStorageAccount GetStorageAccount(string storageAccountName)
+        private IStorageAccount GetStorageAccount(string storageAccountName)
         {
             StorageAccountBaseCollection storageAccounts = GetMediaContext().StorageAccounts;
 
             return storageAccounts.Where(c => c.Name == storageAccountName).FirstOrDefault();
         }
 
-        private List<Tuple<string, long>> GetWeightedList(string[] accountNames)
+        private static IEnumerable<IStorageAccount> GetAllStorageAccounts(MediaContextBase mediaContextBase)
         {
-            List<Tuple<string, long>> returnValue = new List<Tuple<string, long>>();
+            StorageAccountBaseCollection storageAccounts = mediaContextBase.StorageAccounts;
 
-            for (int i = 0; i < accountNames.Length; i++)
-            {
-                IStorageAccount storageAccount = GetStorageAccount(accountNames[i]);
-                if (storageAccount == null)
-                {
-                    string message = string.Format(CultureInfo.CurrentCulture, "Unable to find a storage account with name \"{0}\"", accountNames[i]);
-                    throw new ArgumentException(message);
-                }
-
-                long bytesUsed = 0;
-                if (storageAccount.BytesUsed.HasValue)
-                {
-                    bytesUsed = storageAccount.BytesUsed.Value;
-                }
-                else
-                {
-                    if (this.IncludeAccountsWithNoCapacityData)
-                    {
-                        bytesUsed = 0;
-                    }
-                    else
-                    {
-                        bytesUsed = MaximumStorageAccountCapacity;
-                    }
-                }
-
-                long weight = MaximumStorageAccountCapacity - bytesUsed;
-
-                // If the storage capacity is more than the max, then we give it a weight of 0 (it won't be selected)
-                weight = Math.Max(weight, 0);
-
-                Tuple<string, long> current = new Tuple<string, long>(accountNames[i], weight);
-                returnValue.Add(current);
-            }
-
-            return returnValue;
-        }
-
-        public string SelectAccountForAssets(string[] storageAccountNames)
-        {
-            if (storageAccountNames == null)
-            {
-                throw new ArgumentNullException("storageAccountNames");
-            }
-
-            List<Tuple<string, long>> weightedList = GetWeightedList(storageAccountNames);
-
-            return RandomlySelectFromWeightedList(weightedList);
+            return storageAccounts.AsEnumerable<IStorageAccount>();
         }
     }
 

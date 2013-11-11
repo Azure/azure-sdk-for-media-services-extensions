@@ -43,6 +43,31 @@ namespace MediaServices.Client.Extensions.Tests
         private double[] _valuesForRandomNumberGeneratorToReturnEven = new double[] { 0.2, 0.4, 0.6, 0.8 };
         private double[] _valuesForRandomNumberGeneratorToReturnTopAndBottom = new double[] { 0.0, 0.05, 0.99, 1.0 };
 
+        private long CalculateExpectedAvailableCapacity(long? originalBytesUsed, long maximumStorageAccountCapacity, bool considerFullCapacityIfNoDataAvailable)
+        {
+            long bytesUsed = 0;
+
+            if (originalBytesUsed.HasValue)
+            {
+                bytesUsed = originalBytesUsed.Value;
+            }
+            else
+            {
+                if (considerFullCapacityIfNoDataAvailable)
+                {
+                    bytesUsed = 0;
+                }
+                else
+                {
+                    bytesUsed = maximumStorageAccountCapacity;
+                }
+            }
+
+            long bytesAvailable = maximumStorageAccountCapacity - bytesUsed;
+
+            return Math.Max(bytesAvailable, 0);
+        }
+
         private List<IStorageAccount> GetStorageAccountList(string[] accountNames, long?[] bytesUsedValues)
         {
             List<IStorageAccount> storageAccountList = new List<IStorageAccount>();
@@ -65,7 +90,7 @@ namespace MediaServices.Client.Extensions.Tests
             return returnValue;
         }
 
-        private CapacityBasedAccountSelectionStrategy GetCapacityBasedAccountSelectionStrategy(List<IStorageAccount> storageAccounts)
+        private MediaContextBase GetMediaContextBase(List<IStorageAccount> storageAccounts)
         {
             StorageAccountBaseCollectionMock collection = null;
             if (storageAccounts != null)
@@ -73,29 +98,23 @@ namespace MediaServices.Client.Extensions.Tests
                 collection = new StorageAccountBaseCollectionMock(storageAccounts.AsQueryable<IStorageAccount>());
             }
 
-            MediaContextBaseMock mediaContextBaseMock = new MediaContextBaseMock(collection);
-
-            CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(mediaContextBaseMock);
-
-            return strategy;            
+            return new MediaContextBaseMock(collection);
         }
 
         [TestMethod]
-        public void CapacityBasedShouldThrowIfAccountNamesAreNull()
+        public void CapacityBasedShouldThrowIfNoAccounts()
         {
-            string[] storageAccountNames = null;
-            List<IStorageAccount> storageAccountList = null;
-
-            CapacityBasedAccountSelectionStrategy strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
+            MediaContextBase context = GetMediaContextBase(null);
+            CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(context);
 
             try
             {
-                strategy.SelectAccountForAssets(storageAccountNames);
-                Assert.Fail("Should have throw an ArgumentNullException exception.");
+                strategy.SelectAccountForAssets();
+                Assert.Fail("Should have thrown an ArgumentNullException exception.");
             }
-            catch (ArgumentNullException ae)
+            catch (InvalidOperationException e)
             {
-                Assert.AreEqual("storageAccountNames", ae.ParamName);
+                Assert.AreEqual("No storage accounts configured to select from.", e.Message);
             }
         }
 
@@ -103,16 +122,24 @@ namespace MediaServices.Client.Extensions.Tests
         public void CapacityBasedShouldThrowIfAccountNamesCannotBeFound()
         {
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
-            CapacityBasedAccountSelectionStrategy strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
+            
+            MediaContextBase context = GetMediaContextBase(storageAccountList);
+
+            CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(context);
 
             try
             {
-                strategy.SelectAccountForAssets(_fiveStorageAccountNameArray);
-                Assert.Fail("Should have throw an ArgumentNullException exception.");
+                foreach (string accountName in _fiveStorageAccountNameArray)
+                {
+                    strategy.AddStorageAccountByName(accountName);
+                }
+
+                Assert.Fail("Should have thrown an ArgumentException exception.");
             }
             catch (ArgumentException ae)
             {
-                Assert.AreEqual("Unable to find a storage account with name \"account5\"", ae.Message);
+                Assert.IsTrue(ae.Message.Contains("Unable to find a storage account with name \"account5\""));
+                Assert.AreEqual("storageAccountName", ae.ParamName);
             }
         }
 
@@ -120,32 +147,37 @@ namespace MediaServices.Client.Extensions.Tests
         public void CapacityBasedShouldOmitAccountsWithNoDataByDefault()
         {
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _oneZeroBytesUsedValues);
-            CapacityBasedAccountSelectionStrategy strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
 
-            strategy.MaximumStorageAccountCapacity = oneGB;
+            MediaContextBase context = GetMediaContextBase(storageAccountList);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity:oneGB);
 
-            string accountNameToUse = strategy.SelectAccountForAssets(_fourStorageAccountNameArray);
+            string accountNameToUse = strategy.SelectAccountForAssets();
 
             Assert.IsNotNull(accountNameToUse);
             Assert.AreEqual(0, _oneZeroBytesUsedValues[1].Value);
             Assert.AreEqual(_fourStorageAccountNameArray[1], accountNameToUse);
+
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, false);
         }
 
         [TestMethod]
         public void CapacityBasedShouldIncludeAccountsWithNoDataWhenEnabled()
         {
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _oneNullBytesUsedValues);
-            CapacityBasedAccountSelectionStrategy strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
 
-            strategy.MaximumStorageAccountCapacity = oneGB;
-            strategy.IncludeAccountsWithNoCapacityData = true;
+            MediaContextBase context = GetMediaContextBase(storageAccountList);
+
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, includeAccountsWithNoCapacityData:true, maximumStorageAccountCapacity: oneGB);
+
             strategy.Random = new RandomNumberGeneratorMock(_valuesForRandomNumberGeneratorToReturnEven);
 
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets(_fourStorageAccountNameArray);
+                string accountNameToUse = strategy.SelectAccountForAssets();
                 Assert.AreEqual(storageAccountList[i].Name, accountNameToUse);
             }
+
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, true);
         }
 
         [TestMethod]
@@ -153,64 +185,126 @@ namespace MediaServices.Client.Extensions.Tests
         {
             // Try even weighting
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
-            CapacityBasedAccountSelectionStrategy strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
+
+            MediaContextBase context = GetMediaContextBase(storageAccountList);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context);
 
             strategy.Random = new RandomNumberGeneratorMock(_valuesForRandomNumberGeneratorToReturnEven);
 
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets(_fourStorageAccountNameArray);
+                string accountNameToUse = strategy.SelectAccountForAssets();
                 Assert.AreEqual(storageAccountList[i].Name, accountNameToUse);
             }
+
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, CapacityBasedAccountSelectionStrategy.oneHundredEightyTB, false);
 
             // Try skewed weighting
             // Note that the first account and the last account in the list are almost full.  With the "random" numbers we picked
             // we will always pick the two middle accounts.
             storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _skewedBytesUsedValues);
-            strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
+            context = GetMediaContextBase(storageAccountList);
+            strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity:oneGB);
 
-            strategy.MaximumStorageAccountCapacity = oneGB;
             strategy.Random = new RandomNumberGeneratorMock(_valuesForRandomNumberGeneratorToReturnEven);
 
             string[] expectedAccountNames = new string[] { _fiveStorageAccountNameArray[1], _fiveStorageAccountNameArray[1], _fiveStorageAccountNameArray[2], _fiveStorageAccountNameArray[2] };
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets(_fourStorageAccountNameArray);
+                string accountNameToUse = strategy.SelectAccountForAssets();
                 Assert.AreEqual(expectedAccountNames[i], accountNameToUse);
             }
+
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, false);
 
             // Try skewed weighting again but change the "random" numbers we generate to be very small and very large so that
             // we pick the first and last account even though they are almost full.
             storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _skewedBytesUsedValues);
-            strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
+            context = GetMediaContextBase(storageAccountList);
+            strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB);
 
-            strategy.MaximumStorageAccountCapacity = oneGB;
             strategy.Random = new RandomNumberGeneratorMock(_valuesForRandomNumberGeneratorToReturnTopAndBottom);
 
             expectedAccountNames = new string[] { _fiveStorageAccountNameArray[0], _fiveStorageAccountNameArray[0], _fiveStorageAccountNameArray[3], _fiveStorageAccountNameArray[3] };
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets(_fourStorageAccountNameArray);
+                string accountNameToUse = strategy.SelectAccountForAssets();
                 Assert.AreEqual(expectedAccountNames[i], accountNameToUse);
             }
+
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, false);
         }
 
         [TestMethod]
         public void CapacityBasedShouldThrowWhenNoAccountCanBeSelected()
         {
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
-            CapacityBasedAccountSelectionStrategy strategy = GetCapacityBasedAccountSelectionStrategy(storageAccountList);
 
-            strategy.MaximumStorageAccountCapacity = oneGB;
+            MediaContextBase context = GetMediaContextBase(storageAccountList);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity:oneGB);
+
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, false);
 
             try
             {
-                string accountNameToUse = strategy.SelectAccountForAssets(_fourStorageAccountNameArray);
-                Assert.Fail("Should have throw an ArgumentException exception.");
+                string accountNameToUse = strategy.SelectAccountForAssets();
+                Assert.Fail("Should have thrown an ArgumentException exception.");
             }
-            catch (ArgumentException ae)
+            catch (InvalidOperationException e)
             {
-                Assert.AreEqual("Unable to find any storage accounts with available capacity!", ae.Message);
+                Assert.AreEqual("Unable to find any storage accounts with available capacity!", e.Message);
+            }
+        }
+
+        [TestMethod]
+        public void CapacityBasedShouldFromAccountsShouldFilterBasedOnInputArray()
+        {
+            List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
+
+            // Copy 3 of the 4 names to the filter array
+            string[] filterArray = new string[_fourStorageAccountNameArray.Length - 1];
+            Array.Copy(_fourStorageAccountNameArray, filterArray, filterArray.Length);
+
+            // save the name of the skipped entry
+            string nameSkipped = _fourStorageAccountNameArray[_fourStorageAccountNameArray.Length - 1];
+
+            // Create the CapacityBasedAccountSelectionStrategy
+            MediaContextBase context = GetMediaContextBase(storageAccountList);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB, storageAccountNames:filterArray);
+
+            // Now ensure that the internal list only has the expected number of entries.
+            IList<CapacityBaseAccountSelectionStrategyListEntry> accountListFromStrategy = strategy.GetStorageAccounts();
+            Assert.AreEqual(filterArray.Length, accountListFromStrategy.Count);
+
+            foreach (CapacityBaseAccountSelectionStrategyListEntry entry in accountListFromStrategy)
+            {
+                Assert.AreNotEqual(nameSkipped, entry.StorageAccount.Name);
+            }
+
+            // Add the name previously skipped
+            strategy.AddStorageAccountByName(nameSkipped, false, oneGB);
+
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, false);
+
+            // Now verify that if I have names in the filter array that don't exist in the account no exception occurs
+            strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB, storageAccountNames: _fiveStorageAccountNameArray);
+            VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, false);
+        }
+
+        private void VerifyStrategyEntriesMatchExpectations(List<IStorageAccount> expectedList, CapacityBasedAccountSelectionStrategy strategy, long maximumStorageAccountCapacity, bool considerFullCapacityIfNoDataAvailable)
+        {
+            IList<CapacityBaseAccountSelectionStrategyListEntry> accountListFromStrategy = strategy.GetStorageAccounts();
+            Assert.AreEqual(expectedList.Count, accountListFromStrategy.Count);
+
+            foreach (CapacityBaseAccountSelectionStrategyListEntry entry in accountListFromStrategy)
+            {
+                IStorageAccount accountFromExpectedList = expectedList.Where(st => st.Name == entry.StorageAccount.Name).SingleOrDefault();
+
+                long expectedAvailableCapacity = CalculateExpectedAvailableCapacity(accountFromExpectedList.BytesUsed, maximumStorageAccountCapacity, considerFullCapacityIfNoDataAvailable);
+
+                Assert.AreEqual(accountFromExpectedList.Name, entry.StorageAccount.Name);
+                Assert.AreEqual(accountFromExpectedList.BytesUsed, entry.StorageAccount.BytesUsed);
+                Assert.AreEqual(expectedAvailableCapacity, entry.AvailableCapacity);
             }
         }
     }

@@ -28,6 +28,12 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
         public MediaContextBaseMock(StorageAccountBaseCollection storageAccounts)
         {
             _storageAccounts = storageAccounts;
+            if (_storageAccounts != null)
+            {
+                _storageAccounts.MediaContext = this;
+            }
+
+            this.MediaServicesClassFactory = new AzureMediaServicesClassFactory();
         }
 
         public override AccessPolicyBaseCollection AccessPolicies { get { throw new NotImplementedException(); } }

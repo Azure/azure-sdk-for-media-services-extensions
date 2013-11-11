@@ -16,6 +16,8 @@
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
     using System;
+    using System.Linq;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Represents simple pseudo random account selection based on the <see cref="System.Random"/> class.
@@ -23,13 +25,26 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     public class RandomAccountSelectionStrategy : IAccountSelectionStrategy
     {
         private readonly Random random = new Random();
+        private string[] _storageAccountNames;
 
         /// <summary>
-        /// Selects a single storage account name from the <paramref name="storageAccountNames"/> array using a pseudo random selection based on the <see cref="System.Random"/> class.
+        /// Creates a RandomAccountSelectionStrategy instance using all of storage account names found in the MediaContextBase.StorageAccounts collection.
         /// </summary>
-        /// <param name="storageAccountNames">The storage account names to select from.</param>
-        /// <returns>A single storage account name from the <paramref name="storageAccountNames"/> array using a pseudo random selection based on the <see cref="System.Random"/> class.</returns>
-        public string SelectAccountForAssets(string[] storageAccountNames)
+        /// <param name="mediaContextBase">MediaContextBase to use to query the storage account names from.</param>
+        /// <returns>A new RandomAccountSelectionStrategy instance.</returns>
+        public static RandomAccountSelectionStrategy FromAccounts(MediaContextBase mediaContextBase)
+        {
+            string[] storageAccountNames = mediaContextBase.StorageAccounts.ToList().Select(c => c.Name).ToArray();
+
+            return new RandomAccountSelectionStrategy(storageAccountNames);
+        }
+
+        /// <summary>
+        /// Constructs a new RandomAccountSelectionStrategy that will use a pseudo random selection based on the <see cref="System.Random"/> class of the
+        /// storage account names provided.
+        /// </summary>
+        /// <param name="storageAccountNames">Array of storage account names to choose from.</param>
+        public RandomAccountSelectionStrategy(string[] storageAccountNames)
         {
             if (storageAccountNames == null)
             {
@@ -41,7 +56,25 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentException("The storage account names array cannot be empty.", "storageAccountNames");
             }
 
-            return storageAccountNames[this.random.Next(0, storageAccountNames.Length)];
+            _storageAccountNames = storageAccountNames;
+        }
+
+        /// <summary>
+        /// Gets the storage account names that the class selects from.
+        /// </summary>
+        /// <returns>Returns an <see cref="System.IList<T>"/> of storage account names that the class selects from. </returns>
+        public IList<string> GetStorageAccounts()
+        {
+            return _storageAccountNames.ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Selects a single storage account name from the storage account names provided when the class is constructed using a pseudo random selection based on the <see cref="System.Random"/> class.
+        /// </summary>
+        /// <returns>A single storage account name</returns>
+        public string SelectAccountForAssets()
+        {
+            return _storageAccountNames[this.random.Next(0, _storageAccountNames.Length)];
         }
     }
 }

@@ -21,10 +21,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     public interface IAccountSelectionStrategy
     {
         /// <summary>
-        /// Selects a single storage account name from the <paramref name="storageAccountNames"/> array.
+        /// Selects a single storage account name from the internal list of storage accounts.
         /// </summary>
-        /// <param name="storageAccountNames">The storage account names to select from.</param>
-        /// <returns>A single storage account name from the <paramref name="storageAccountNames"/> array.</returns>
-        string SelectAccountForAssets(string[] storageAccountNames);
+        /// <returns>The storage account name to use for creating a new asset.</returns>
+        string SelectAccountForAssets();
     }
 }

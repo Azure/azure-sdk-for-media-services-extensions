@@ -79,22 +79,19 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
         public void ShouldCreateOutputAssetWithAccountSelectionStrategy()
         {
-            CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(context, true);
-
-            string[] accounts = context.StorageAccounts.ToList().Select(c=>c.Name).ToArray();
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, true);
 
             string inputAssetFilePath = Path.Combine(TestContext.TestDeploymentDir, smallWmv);
             string inputAssetFileName = Path.GetFileName(inputAssetFilePath);
 
-            IAsset inputAsset = context.Assets.Create("", accounts, AssetCreationOptions.StorageEncrypted);
+            IAsset inputAsset = context.Assets.Create("", strategy, AssetCreationOptions.StorageEncrypted);
             IAssetFile file = inputAsset.AssetFiles.Create(inputAssetFileName);
             file.Upload(inputAssetFilePath);
 
             IJob job = context.Jobs.Create("Job to test using an account selection strategy for an output asset");
             ITask task = job.Tasks.AddNew("Task to test using an account selection strategy for an output asset", GetMediaProcessor(Encoder), Preset, TaskOptions.None);
             task.InputAssets.Add(inputAsset);
-            task.OutputAssets.SetAccountSelectionStrategy(strategy);
-            task.OutputAssets.AddNew("OutputAsset", accounts, AssetCreationOptions.None);
+            task.OutputAssets.AddNew("OutputAsset", strategy, AssetCreationOptions.None);
 
             job.Submit();       
 

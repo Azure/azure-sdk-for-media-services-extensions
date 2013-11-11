@@ -19,50 +19,29 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 {
     public static class OutputAssetCollectionExtensions
     {
-        private static IAccountSelectionStrategy CurrentSelectionStrategy = new RandomAccountSelectionStrategy();
-
-        public static IAsset AddNew(this OutputAssetCollection collection, string assetName, string[] storageAccountNames, AssetCreationOptions options)
+        /// <summary>
+        /// Returns a new empty <see cref="IAsset"/> within one selected storage account from <paramref name="storageAccountNames"/> based on the default <see cref="IAccountSelectionStrategy"/>.
+        /// </summary>
+        /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
+        /// <param name="assetName">The asset name.</param>
+        /// <param name="strategy">The <see cref="IAccountSelectionStrategy"/> used to select a storage account for the new output asset.</param>
+        /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
+        /// <returns>A new empty <see cref="IAsset"/> within one selected storage account from the provided <see cref="IAccountSelectionStrategy"/>.</returns>
+        public static IAsset AddNew(this OutputAssetCollection collection, string assetName, IAccountSelectionStrategy strategy, AssetCreationOptions options)
         {
             if (collection == null)
             {
                 throw new ArgumentNullException("collection");            
             }
 
-            if (storageAccountNames == null)
+            if (strategy == null)
             {
-                throw new ArgumentNullException("storageAccountNames");
+                throw new ArgumentNullException("strategy");
             }
 
-            IAccountSelectionStrategy strategy = collection.GetAccountSelectionStrategy();
-
-            string storageAccount = strategy.SelectAccountForAssets(storageAccountNames);
+            string storageAccount = strategy.SelectAccountForAssets();
 
             return collection.AddNew(assetName, storageAccount, options);
-        }
-
-        /// <summary>
-        /// Gets the current IAccountSelectionStrategy.
-        /// </summary>
-        /// <param name="collection">The output asset collection.</param>
-        /// <returns></returns>
-        public static IAccountSelectionStrategy GetAccountSelectionStrategy(this OutputAssetCollection collection)
-        {
-            return CurrentSelectionStrategy;
-        }
-
-        /// <summary>
-        /// Sets the Account Selection Strategy used to select storage accounts when using the CreateAsync overloads that take a list of storage account names.
-        /// </summary>
-        /// <param name="collection">The output asset collection.</param>
-        /// <param name="accountSelectionStrategy">The IAccountSelectionStrategy to set.</param>
-        public static void SetAccountSelectionStrategy(this OutputAssetCollection collection, IAccountSelectionStrategy accountSelectionStrategy)
-        {
-            if (accountSelectionStrategy == null)
-            {
-                throw new ArgumentNullException("accountSelectionStrategy");
-            }
-
-            CurrentSelectionStrategy = accountSelectionStrategy;
         }
     }
 }

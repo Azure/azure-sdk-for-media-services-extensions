@@ -15,6 +15,7 @@
 // </license>
 
 using Microsoft.WindowsAzure.MediaServices.Client;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaServices.Client.Extensions.Tests

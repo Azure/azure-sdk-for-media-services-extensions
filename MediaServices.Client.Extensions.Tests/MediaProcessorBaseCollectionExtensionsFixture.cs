@@ -66,18 +66,7 @@ namespace MediaServices.Client.Extensions.Tests
         [TestInitialize]
         public void Initialize()
         {
-            this.context = this.CreateContext();
-        }
-
-        private CloudMediaContext CreateContext()
-        {
-            return new CloudMediaContext(
-                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
-                ConfigurationManager.AppSettings["MediaServiceAccountName"],
-                ConfigurationManager.AppSettings["MediaServiceAccountKey"],
-                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
-                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
-                );
+            this.context = TestHelper.CreateContext();
         }
     }
 }

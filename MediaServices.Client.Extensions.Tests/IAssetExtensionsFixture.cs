@@ -152,7 +152,7 @@ namespace MediaServices.Client.Extensions.Tests
             AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv2.wmv");
             AssertDownloadedFile(originalFolderPath, downloadFolderPath, "dummy.ism");
 
-            this.context = this.CreateContext();
+            this.context = TestHelper.CreateContext();
             Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
         }
 
@@ -195,7 +195,7 @@ namespace MediaServices.Client.Extensions.Tests
             AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv2.wmv", downloadResults["smallwmv2.wmv"]);
             AssertDownloadedFile(originalFolderPath, downloadFolderPath, "dummy.ism", downloadResults["dummy.ism"]);
 
-            this.context = this.CreateContext();
+            this.context = TestHelper.CreateContext();
             Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
         }
 
@@ -428,7 +428,7 @@ namespace MediaServices.Client.Extensions.Tests
         [TestInitialize]
         public void Initialize()
         {
-            this.context = this.CreateContext();
+            this.context = TestHelper.CreateContext();
             this.asset = null;
         }
 
@@ -454,17 +454,6 @@ namespace MediaServices.Client.Extensions.Tests
                 Assert.AreEqual(expected.Length, downloadProgressChangedEventArgs.TotalBytes);
                 Assert.AreEqual(100, downloadProgressChangedEventArgs.Progress);
             }
-        }
-
-        private CloudMediaContext CreateContext()
-        {
-            return new CloudMediaContext(
-                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
-                ConfigurationManager.AppSettings["MediaServiceAccountName"],
-                ConfigurationManager.AppSettings["MediaServiceAccountKey"],
-                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
-                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
-                );
         }
     }
 }

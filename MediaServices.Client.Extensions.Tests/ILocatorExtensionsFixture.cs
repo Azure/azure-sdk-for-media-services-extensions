@@ -101,7 +101,7 @@ namespace MediaServices.Client.Extensions.Tests
         [TestInitialize]
         public void Initialize()
         {
-            this.context = this.CreateContext();
+            this.context = TestHelper.CreateContext();
             this.asset = null;
         }
 
@@ -112,17 +112,6 @@ namespace MediaServices.Client.Extensions.Tests
             {
                 this.asset.Delete();
             }
-        }
-
-        private CloudMediaContext CreateContext()
-        {
-            return new CloudMediaContext(
-                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
-                ConfigurationManager.AppSettings["MediaServiceAccountName"],
-                ConfigurationManager.AppSettings["MediaServiceAccountKey"],
-                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
-                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
-                );
         }
     }
 }

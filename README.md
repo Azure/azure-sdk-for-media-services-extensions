@@ -23,7 +23,7 @@ After installing the package, a **MediaServicesExtensions** folder will be added
 
 ## Extension Methods and Helpers available
 
-## Create an empty Asset using a selection strategy for the Storage account
+### Create an empty Asset using a selection strategy for the Storage account
 Create a new empty asset within one selected Storage account based on the default account selection strategy using a single extension method for the [AssetBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection.aspx) class. There is an additional overload with _async_ support.
 ```csharp
 CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
@@ -37,7 +37,7 @@ string assetName = "MyAssetName";
 // The options for creating the new asset.
 AssetCreationOptions assetCreationOptions = AssetCreationOptions.None;
 
-// Create a new asset and upload a local file using a single extension method.
+// Create a new asset empty asset within one selected Storage account using a single extension method.
 IAsset asset = context.Assets.Create(assetName, storageAccountNames, assetCreationOptions);
 ```
 

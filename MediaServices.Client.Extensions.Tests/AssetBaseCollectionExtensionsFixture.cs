@@ -19,7 +19,6 @@ namespace MediaServices.Client.Extensions.Tests
     using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -335,8 +334,8 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\dummy.ism", "Media")]
         public void ShouldCreateAssetFromFolderWithRandomAccountSelectionStrategy()
         {
-            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
 
+            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
             var folderName = "Media";
             this.asset = this.context.Assets.CreateFromFolder(folderName, strategy, AssetCreationOptions.None, null);
             var assetId = this.asset.Id;

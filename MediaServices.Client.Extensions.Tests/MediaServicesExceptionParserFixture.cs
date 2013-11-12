@@ -16,7 +16,6 @@
 namespace MediaServices.Client.Extensions.Tests
 {
     using System;
-    using System.Configuration;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
     using System.Data.Services.Client;

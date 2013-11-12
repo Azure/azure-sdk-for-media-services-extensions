@@ -23,6 +23,7 @@ namespace MediaServices.Client.Extensions.Tests
     using System.IO;
     using System.Linq;
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
 
@@ -33,7 +34,42 @@ namespace MediaServices.Client.Extensions.Tests
         private IAsset asset;
 
         [TestMethod]
-        public void ShouldCreateAssetWithDefaultAccountSelectionStrategy()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowIfSelectionStrategyIsNullDuringAssetCreateAsync()
+        {
+            IAccountSelectionStrategy selectionStrategy = null;
+            CancellationToken token;
+
+            try
+            {
+                Task<IAsset> assetTask = this.context.Assets.CreateAsync(Guid.NewGuid().ToString(), selectionStrategy, AssetCreationOptions.None, token);
+            }
+            catch (ArgumentNullException ane)
+            {
+                Assert.AreEqual(ane.ParamName, "strategy");
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowIfSelectionStrategyIsNullDuringAssetCreate()
+        {
+            IAccountSelectionStrategy selectionStrategy = null;
+
+            try
+            {
+                this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), selectionStrategy, AssetCreationOptions.None);
+            }
+            catch (ArgumentNullException ane)
+            {
+                Assert.AreEqual(ane.ParamName, "strategy");
+                throw;
+            }
+        }
+
+        [TestMethod]
+        public void ShouldCreateAssetWithRandomAccountSelectionStrategy()
         {
             IAccountSelectionStrategy selectionStrategy = RandomAccountSelectionStrategy.FromAccounts(context);
             
@@ -89,6 +125,7 @@ namespace MediaServices.Client.Extensions.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowCreateAssetFromFileIfAssetCollectionIsNull()
         {
             AssetBaseCollection nullAssets = null;
@@ -100,6 +137,25 @@ namespace MediaServices.Client.Extensions.Tests
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowIfSelectionStrategyIsNullDuringCreateFromFileAsync()
+        {
+            IAccountSelectionStrategy selectionStrategy = null;
+            CancellationToken token;
+
+            try
+            {
+                Task<IAsset> assetTask = this.context.Assets.CreateFromFileAsync(Guid.NewGuid().ToString(), selectionStrategy, AssetCreationOptions.None, null, token);
+            }
+            catch (ArgumentNullException ane)
+            {
+                Assert.AreEqual(ane.ParamName, "strategy");
+                throw;
             }
         }
 
@@ -125,7 +181,7 @@ namespace MediaServices.Client.Extensions.Tests
 
         [TestMethod]
         [DeploymentItem(@"Media\smallwmv1.wmv")]
-        public void ShouldCreateAssetFromFileWithDefaultAccountSelectionStrategy()
+        public void ShouldCreateAssetFromFileWithRandomAccountSelectionStrategy()
         {
             RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
 
@@ -185,21 +241,44 @@ namespace MediaServices.Client.Extensions.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowCreateAssetFromFolderIfAssetCollectionIsNull()
         {
             AssetBaseCollection nullAssets = null;
 
             try
             {
-                nullAssets.CreateFromFolderAsync(string.Empty, null, AssetCreationOptions.None, CancellationToken.None);
+                Task<IAsset> assetTask = nullAssets.CreateFromFolderAsync(string.Empty, null, AssetCreationOptions.None, CancellationToken.None);
+
+                this.asset = assetTask.Result;
             }
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
             }
         }
 
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowIfSelectionStrategyIsNullDuringCreateFromFolderAsync()
+        {
+            IAccountSelectionStrategy selectionStrategy = null;
+            CancellationToken token;
+
+            try
+            {
+                Task<IAsset> assetTask = this.context.Assets.CreateFromFolderAsync(string.Empty, selectionStrategy, AssetCreationOptions.None, null, token);
+            }
+            catch (ArgumentNullException ane)
+            {
+                Assert.AreEqual(ane.ParamName, "strategy");
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowCreateAssetFromFolderIfFolderDoesNotContainAnyFiles()
         {
             var emptyFolderName = "EmptyMediaFolder";
@@ -212,11 +291,14 @@ namespace MediaServices.Client.Extensions.Tests
 
             try
             {
-                this.context.Assets.CreateFromFolderAsync(emptyFolderName, AssetCreationOptions.None, CancellationToken.None);
+                Task<IAsset> assetTask = this.context.Assets.CreateFromFolderAsync(emptyFolderName, AssetCreationOptions.None, CancellationToken.None);
+
+                this.asset = assetTask.Result;
             }
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(FileNotFoundException));
+                throw;
             }
         }
 
@@ -251,7 +333,7 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
         [DeploymentItem(@"Media\smallwmv2.wmv", "Media")]
         [DeploymentItem(@"Media\dummy.ism", "Media")]
-        public void ShouldCreateAssetFromFolderWithDefaultAccountSelectionStrategy()
+        public void ShouldCreateAssetFromFolderWithRandomAccountSelectionStrategy()
         {
             RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
 

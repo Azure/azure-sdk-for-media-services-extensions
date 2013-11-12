@@ -40,6 +40,16 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A new empty <see cref="IAsset"/> within one selected storage account from the provided <see cref="IAccountSelectionStrategy"/>.</returns>
         public static IAsset Create(this AssetBaseCollection assets, string assetName, IAccountSelectionStrategy strategy, AssetCreationOptions options)
         {
+            if (assets == null)
+            {
+                throw new ArgumentNullException("assets");
+            }
+
+            if (strategy == null)
+            {
+                throw new ArgumentNullException("strategy");
+            }
+
             string storageAccountName = strategy.SelectAccountForAssets();
 
             return assets.Create(assetName, storageAccountName, options);
@@ -56,6 +66,16 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new empty <see cref="IAsset"/> within one selected storage account from the given <see cref="IAccountSelectionStrategy"/>.</returns>
         public static Task<IAsset> CreateAsync(this AssetBaseCollection assets, string assetName, IAccountSelectionStrategy strategy, AssetCreationOptions options, CancellationToken token)
         {
+            if (assets == null)
+            {
+                throw new ArgumentNullException("assets");
+            }
+
+            if (strategy == null)
+            {
+                throw new ArgumentNullException("strategy");
+            }
+
             string storageAccountName = strategy.SelectAccountForAssets();
 
             return assets.CreateAsync(assetName, storageAccountName, options, token);
@@ -73,6 +93,11 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the file in <paramref name="filePath"/>.</returns>
         public static Task<IAsset> CreateFromFileAsync(this AssetBaseCollection assets, string filePath, IAccountSelectionStrategy strategy, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
         {
+            if (strategy == null)
+            {
+                throw new ArgumentNullException("strategy");
+            }
+
             string storageAccountName = strategy.SelectAccountForAssets();
 
             return assets.CreateFromFileAsync(filePath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);
@@ -252,6 +277,16 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the files in <paramref name="folderPath"/>.</returns>
         public static Task<IAsset> CreateFromFolderAsync(this AssetBaseCollection assets, string folderPath, IAccountSelectionStrategy strategy, AssetCreationOptions options, Action<IAssetFile, UploadProgressChangedEventArgs> uploadProgressChangedCallback, CancellationToken cancellationToken)
         {
+            if (assets == null)
+            {
+                throw new ArgumentNullException("assets");
+            }
+
+            if (strategy == null)
+            {
+                throw new ArgumentNullException("strategy");
+            }
+
             string storageAccountName = strategy.SelectAccountForAssets();
 
             return assets.CreateFromFolderAsync(folderPath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);

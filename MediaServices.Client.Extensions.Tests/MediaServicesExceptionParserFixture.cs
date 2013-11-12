@@ -19,11 +19,13 @@ namespace MediaServices.Client.Extensions.Tests
     using System.Configuration;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
+    using System.Data.Services.Client;
 
     [TestClass]
     public class MediaServicesExceptionParserFixture
     {
         [TestMethod]
+        [ExpectedException(typeof(System.InvalidOperationException), AllowDerivedTypes = true)] // We really want this to be a DataServiceRequestException but there is an issue with multiple assemblies defining the type
         public void ShoudParseMediaServicesExceptionErrorMessage()
         {
             var context = TestHelper.CreateContext();
@@ -40,10 +42,13 @@ namespace MediaServices.Client.Extensions.Tests
 
                 Assert.IsNotNull(parsedException);
                 Assert.AreEqual("Resource Asset not found", parsedException.Message);
+
+                throw;
             }
         }
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShoudParseMediaServicesExceptionErrorMessageFromAggregateException()
         {
             var context = TestHelper.CreateContext();
@@ -60,6 +65,8 @@ namespace MediaServices.Client.Extensions.Tests
 
                 Assert.IsNotNull(parsedException);
                 Assert.AreEqual("Resource Asset not found", parsedException.Message);
+
+                throw;
             }
         }
 

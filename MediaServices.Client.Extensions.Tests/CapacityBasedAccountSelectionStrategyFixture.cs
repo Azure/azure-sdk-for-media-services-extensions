@@ -102,6 +102,7 @@ namespace MediaServices.Client.Extensions.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void CapacityBasedShouldThrowIfNoAccounts()
         {
             MediaContextBase context = GetMediaContextBase(null);
@@ -110,15 +111,16 @@ namespace MediaServices.Client.Extensions.Tests
             try
             {
                 strategy.SelectAccountForAssets();
-                Assert.Fail("Should have thrown an ArgumentNullException exception.");
             }
             catch (InvalidOperationException e)
             {
                 Assert.AreEqual("No storage accounts configured to select from.", e.Message);
+                throw;
             }
         }
 
         [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
         public void CapacityBasedShouldThrowIfAccountNamesCannotBeFound()
         {
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
@@ -133,13 +135,12 @@ namespace MediaServices.Client.Extensions.Tests
                 {
                     strategy.AddStorageAccountByName(accountName);
                 }
-
-                Assert.Fail("Should have thrown an ArgumentException exception.");
             }
             catch (ArgumentException ae)
             {
                 Assert.IsTrue(ae.Message.Contains("Unable to find a storage account with name \"account5\""));
                 Assert.AreEqual("storageAccountName", ae.ParamName);
+                throw;
             }
         }
 
@@ -236,6 +237,7 @@ namespace MediaServices.Client.Extensions.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
         public void CapacityBasedShouldThrowWhenNoAccountCanBeSelected()
         {
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
@@ -248,11 +250,11 @@ namespace MediaServices.Client.Extensions.Tests
             try
             {
                 string accountNameToUse = strategy.SelectAccountForAssets();
-                Assert.Fail("Should have thrown an ArgumentException exception.");
             }
             catch (InvalidOperationException e)
             {
                 Assert.AreEqual("Unable to find any storage accounts with available capacity!", e.Message);
+                throw;
             }
         }
 

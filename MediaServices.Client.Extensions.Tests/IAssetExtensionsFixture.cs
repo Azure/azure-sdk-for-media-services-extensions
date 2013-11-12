@@ -22,6 +22,7 @@ namespace MediaServices.Client.Extensions.Tests
     using System.Linq;
     using System.Net.Http;
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
     using Microsoft.WindowsAzure.Storage.Blob;
@@ -33,6 +34,7 @@ namespace MediaServices.Client.Extensions.Tests
         private IAsset asset;
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowGenerateAssetFilesFromStorageIfAssetIsNull()
         {
             IAsset nullAsset = null;
@@ -44,6 +46,7 @@ namespace MediaServices.Client.Extensions.Tests
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
             }
         }
 
@@ -83,38 +86,37 @@ namespace MediaServices.Client.Extensions.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowDownloadAssetFilesToFolderIfAssetIsNull()
         {
             IAsset nullAsset = null;
 
-            var downloadFolderPath = "Media-Downloaded";
-            if (Directory.Exists(downloadFolderPath))
-            {
-                Directory.Delete(downloadFolderPath, true);
-            }
-
-            Directory.CreateDirectory(downloadFolderPath);
+            string downloadFolderPath = CreateEmptyDirectory();
 
             try
             {
-                nullAsset.DownloadToFolderAsync(downloadFolderPath, CancellationToken.None);
+                Task downloadTask = nullAsset.DownloadToFolderAsync(downloadFolderPath, CancellationToken.None);
+
+                downloadTask.Wait();
             }
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(downloadFolderPath);
             }
         }
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowDownloadAssetFilesToFolderIfFolderPathDoesNotExist()
         {
             this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
 
-            var downloadFolderPath = "Media-Downloaded";
-            if (Directory.Exists(downloadFolderPath))
-            {
-                Directory.Delete(downloadFolderPath, true);
-            }
+            string downloadFolderPath = CreateEmptyDirectory();
 
             try
             {
@@ -123,6 +125,11 @@ namespace MediaServices.Client.Extensions.Tests
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw;
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(downloadFolderPath);
             }
         }
 
@@ -136,24 +143,25 @@ namespace MediaServices.Client.Extensions.Tests
             this.asset = this.context.Assets.CreateFromFolder(originalFolderPath, AssetCreationOptions.None);
             var assetId = this.asset.Id;
 
-            var downloadFolderPath = "Media-Downloaded";
-            if (Directory.Exists(downloadFolderPath))
+            string downloadFolderPath = CreateEmptyDirectory();
+
+            try
             {
-                Directory.Delete(downloadFolderPath, true);
+                this.asset.DownloadToFolder(downloadFolderPath);
+
+                Assert.AreEqual(3, Directory.GetFiles(downloadFolderPath).Length);
+
+                AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv1.wmv");
+                AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv2.wmv");
+                AssertDownloadedFile(originalFolderPath, downloadFolderPath, "dummy.ism");
+
+                this.context = TestHelper.CreateContext();
+                Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
             }
-
-            Directory.CreateDirectory(downloadFolderPath);
-
-            this.asset.DownloadToFolder(downloadFolderPath);
-
-            Assert.AreEqual(3, Directory.GetFiles(downloadFolderPath).Length);
-
-            AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv1.wmv");
-            AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv2.wmv");
-            AssertDownloadedFile(originalFolderPath, downloadFolderPath, "dummy.ism");
-
-            this.context = TestHelper.CreateContext();
-            Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
+            finally
+            {
+                DeleteDirectoryIfExists(downloadFolderPath);
+            }
         }
 
         [TestMethod]
@@ -166,37 +174,39 @@ namespace MediaServices.Client.Extensions.Tests
             this.asset = this.context.Assets.CreateFromFolder(originalFolderPath, AssetCreationOptions.None);
             var assetId = this.asset.Id;
 
-            var downloadFolderPath = "Media-Downloaded";
-            if (Directory.Exists(downloadFolderPath))
+            string downloadFolderPath = CreateEmptyDirectory();
+
+            try
             {
-                Directory.Delete(downloadFolderPath, true);
+                var downloadResults = new ConcurrentDictionary<string, DownloadProgressChangedEventArgs>();
+                Action<IAssetFile, DownloadProgressChangedEventArgs> downloadProgressChangedCallback =
+                    (af, e) =>
+                    {
+                        IAssetFile assetFile = af;
+                        DownloadProgressChangedEventArgs eventArgs = e;
+
+                        Assert.IsNotNull(assetFile);
+                        Assert.IsNotNull(eventArgs);
+
+                        downloadResults.AddOrUpdate(assetFile.Name, eventArgs, (k, e2) => eventArgs);
+                    };
+
+                this.asset.DownloadToFolder(downloadFolderPath, downloadProgressChangedCallback);
+
+                Assert.AreEqual(3, downloadResults.Count);
+                Assert.AreEqual(3, Directory.GetFiles(downloadFolderPath).Length);
+
+                AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv1.wmv", downloadResults["smallwmv1.wmv"]);
+                AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv2.wmv", downloadResults["smallwmv2.wmv"]);
+                AssertDownloadedFile(originalFolderPath, downloadFolderPath, "dummy.ism", downloadResults["dummy.ism"]);
+
+                this.context = TestHelper.CreateContext();
+                Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
             }
-
-            Directory.CreateDirectory(downloadFolderPath);
-            var downloadResults = new ConcurrentDictionary<string, DownloadProgressChangedEventArgs>();
-            Action<IAssetFile, DownloadProgressChangedEventArgs> downloadProgressChangedCallback =
-                (af, e) =>
-                {
-                    IAssetFile assetFile = af;
-                    DownloadProgressChangedEventArgs eventArgs = e;
-
-                    Assert.IsNotNull(assetFile);
-                    Assert.IsNotNull(eventArgs);
-
-                    downloadResults.AddOrUpdate(assetFile.Name, eventArgs, (k, e2) => eventArgs);
-                };
-
-            this.asset.DownloadToFolder(downloadFolderPath, downloadProgressChangedCallback);
-
-            Assert.AreEqual(3, downloadResults.Count);
-            Assert.AreEqual(3, Directory.GetFiles(downloadFolderPath).Length);
-
-            AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv1.wmv", downloadResults["smallwmv1.wmv"]);
-            AssertDownloadedFile(originalFolderPath, downloadFolderPath, "smallwmv2.wmv", downloadResults["smallwmv2.wmv"]);
-            AssertDownloadedFile(originalFolderPath, downloadFolderPath, "dummy.ism", downloadResults["dummy.ism"]);
-
-            this.context = TestHelper.CreateContext();
-            Assert.AreEqual(0, this.context.Locators.Where(l => l.AssetId == assetId).Count());
+            finally
+            {
+                DeleteDirectoryIfExists(downloadFolderPath);
+            }
         }
 
         [TestMethod]
@@ -378,10 +388,12 @@ namespace MediaServices.Client.Extensions.Tests
             {
                 assetFile.GetSasUri(locator);
             }
-            catch
+            finally
             {
-                asset2.Delete();
-                throw;
+                if (asset2 != null)
+                {
+                    asset2.Delete();
+                }
             }
         }
 
@@ -453,6 +465,28 @@ namespace MediaServices.Client.Extensions.Tests
                 Assert.AreEqual(expected.Length, downloadProgressChangedEventArgs.BytesDownloaded);
                 Assert.AreEqual(expected.Length, downloadProgressChangedEventArgs.TotalBytes);
                 Assert.AreEqual(100, downloadProgressChangedEventArgs.Progress);
+            }
+        }
+        
+        private static string CreateEmptyDirectory()
+        {
+            var downloadFolderPath = Path.GetRandomFileName();
+
+            DeleteDirectoryIfExists(downloadFolderPath);
+
+            Directory.CreateDirectory(downloadFolderPath);
+
+            return downloadFolderPath;
+        }
+
+        private static void DeleteDirectoryIfExists(string downloadFolderPath)
+        {
+            if (downloadFolderPath != null)
+            {
+                if (Directory.Exists(downloadFolderPath))
+                {
+                    Directory.Delete(downloadFolderPath, true);
+                }
             }
         }
     }

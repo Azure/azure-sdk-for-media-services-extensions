@@ -28,6 +28,7 @@ namespace MediaServices.Client.Extensions.Tests
         private IAsset asset;
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowCreateAccessPolicyAndLocatorIfLocatorCollectionIsNull()
         {
             LocatorBaseCollection nullLocators = null;
@@ -40,10 +41,12 @@ namespace MediaServices.Client.Extensions.Tests
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
             }
         }
 
         [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
         public void ShouldThrowCreateAccessPolicyAndLocatorIfAssetIsNull()
         {
             IAsset nullAsset = null;
@@ -55,6 +58,7 @@ namespace MediaServices.Client.Extensions.Tests
             catch (AggregateException exception)
             {
                 Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
             }
         }
 

@@ -43,7 +43,8 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public const long twoHundredTB = 219902325555200; // 200 * 1024^4 or 200TB
         public const long oneHundredEightyTB = 197912092999680; // 180 * 1024^4 or 180TB
         private Random _rand = new Random();
-        private List<CapacityBaseAccountSelectionStrategyListEntry> _weightedList;
+        private long _totalCapacityOfAllStorageAccounts;
+        private List<CapacityBasedAccountSelectionStrategyListEntry> _weightedList;
 
         /// <summary>
         /// Constructor for the CapacityBasedAccountSelectionStrategy class
@@ -57,7 +58,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             }
 
             SetMediaContext(mediaContextBase);
-            _weightedList = new List<CapacityBaseAccountSelectionStrategyListEntry>();
+            _weightedList = new List<CapacityBasedAccountSelectionStrategyListEntry>();
         }
 
         /// <summary>
@@ -114,13 +115,14 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentException("storageAccount", "The storage account already exists in the storage account list.");
             }
 
-            CapacityBaseAccountSelectionStrategyListEntry entry = GetListEntry(storageAccount, considerAccountWithNoDataToBeEmpty, maximumStorageAccountCapacity);
+            CapacityBasedAccountSelectionStrategyListEntry entry = GetListEntry(storageAccount, considerAccountWithNoDataToBeEmpty, maximumStorageAccountCapacity);
 
             // As we build the list, add up the AvailableCapacity values so we know the end range of each entry
-            long currentEndOfRangeForList = GetCurrentTotalWeight();
-            entry.EndOfRange = currentEndOfRangeForList + entry.AvailableCapacity;
+            entry.EndOfRange = _totalCapacityOfAllStorageAccounts + entry.AvailableCapacity;
 
             _weightedList.Add(entry);
+
+            _totalCapacityOfAllStorageAccounts = entry.EndOfRange;
         }
 
         /// <summary>
@@ -158,7 +160,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// Implementation of the IAccountSelectionStrategy method SelectAccountForAssets
         /// </summary>
         /// <returns>The name of the storage account to use for creating a new asset.</returns>
-        public string SelectAccountForAssets()
+        public string SelectAccountForAsset()
         {
             if (_weightedList.Count == 0)
             {
@@ -173,7 +175,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// with their calculated available capacity.
         /// </summary>
         /// <returns>IList of CapacityBaseAccountSelectionStrategyListEntrys</returns>
-        public IList<CapacityBaseAccountSelectionStrategyListEntry> GetStorageAccounts()
+        public IList<CapacityBasedAccountSelectionStrategyListEntry> GetStorageAccounts()
         {
             return _weightedList.AsReadOnly();
         }
@@ -187,7 +189,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             set { _rand = value; }
         }
 
-        private static CapacityBaseAccountSelectionStrategyListEntry GetListEntry(IStorageAccount storageAccount, bool considerAccountWithNoDataToBeEmpty, long maximumStorageAccountCapacity)
+        private static CapacityBasedAccountSelectionStrategyListEntry GetListEntry(IStorageAccount storageAccount, bool considerAccountWithNoDataToBeEmpty, long maximumStorageAccountCapacity)
         {
             long bytesUsed = 0;
             if (storageAccount.BytesUsed.HasValue)
@@ -218,7 +220,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             // If the storage capacity is more than the max, then we give it a weight of 0 (it won't be selected)
             bytesAvailable = Math.Max(bytesAvailable, 0);
 
-            return new CapacityBaseAccountSelectionStrategyListEntry(storageAccount, bytesAvailable);
+            return new CapacityBasedAccountSelectionStrategyListEntry(storageAccount, bytesAvailable);
         }
 
         private long RandomLongInclusive(long min, long max)
@@ -240,32 +242,17 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             return (min + Convert.ToInt64(truncatedValue));
         }
 
-        private long GetCurrentTotalWeight()
-        {
-            long returnValue = 0;
-
-            if (_weightedList.Count > 0)
-            {
-                returnValue = _weightedList[_weightedList.Count - 1].EndOfRange;
-            }
-
-            return returnValue;
-        }
-
-        private string RandomlySelectFromWeightedList(List<CapacityBaseAccountSelectionStrategyListEntry> weightedItems)
+        private string RandomlySelectFromWeightedList(List<CapacityBasedAccountSelectionStrategyListEntry> weightedItems)
         {
             string selectedStorageAccount = null;
 
-            // first add up all of the weights
-            long totalOfAllWeights = GetCurrentTotalWeight();
-
-            if (totalOfAllWeights == 0)
+            if (_totalCapacityOfAllStorageAccounts == 0)
             {
                 throw new InvalidOperationException("Unable to find any storage accounts with available capacity!");
             }
 
             // next randomly select a value from 1 to the totalOfAllWeights
-            long randomLong = RandomLongInclusive(1, totalOfAllWeights);
+            long randomLong = RandomLongInclusive(1, _totalCapacityOfAllStorageAccounts);
 
             // now figure out which storage account the randomly selected value lives in
             for (int i = 0; i < weightedItems.Count; i++)

@@ -21,9 +21,9 @@ using System.Linq;
 
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
-    public class CapacityBaseAccountSelectionStrategyListEntry
+    public class CapacityBasedAccountSelectionStrategyListEntry
     {
-        public CapacityBaseAccountSelectionStrategyListEntry(IStorageAccount storageAccount, long availableCapacity)
+        public CapacityBasedAccountSelectionStrategyListEntry(IStorageAccount storageAccount, long availableCapacity)
         {
             if (storageAccount == null)
             {

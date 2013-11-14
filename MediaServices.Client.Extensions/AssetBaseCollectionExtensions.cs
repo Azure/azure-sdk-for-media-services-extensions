@@ -50,7 +50,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentNullException("strategy");
             }
 
-            string storageAccountName = strategy.SelectAccountForAssets();
+            string storageAccountName = strategy.SelectAccountForAsset();
 
             return assets.Create(assetName, storageAccountName, options);
         }
@@ -76,7 +76,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentNullException("strategy");
             }
 
-            string storageAccountName = strategy.SelectAccountForAssets();
+            string storageAccountName = strategy.SelectAccountForAsset();
 
             return assets.CreateAsync(assetName, storageAccountName, options, token);
         }
@@ -98,7 +98,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentNullException("strategy");
             }
 
-            string storageAccountName = strategy.SelectAccountForAssets();
+            string storageAccountName = strategy.SelectAccountForAsset();
 
             return assets.CreateFromFileAsync(filePath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);
         }
@@ -287,7 +287,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentNullException("strategy");
             }
 
-            string storageAccountName = strategy.SelectAccountForAssets();
+            string storageAccountName = strategy.SelectAccountForAsset();
 
             return assets.CreateFromFolderAsync(folderPath, storageAccountName, options, uploadProgressChangedCallback, cancellationToken);
         }

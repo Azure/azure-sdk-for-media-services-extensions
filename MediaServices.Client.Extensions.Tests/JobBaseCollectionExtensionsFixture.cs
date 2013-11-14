@@ -55,6 +55,21 @@ namespace MediaServices.Client.Extensions.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowCreateWithSingleTaskIfStrategyIsNull()
+        {
+            var mediaProcessorName = MediaProcessorNames.WindowsAzureMediaEncoder;
+            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var outputAssetName = "Output Asset Name";
+            var outputAssetOptions = AssetCreationOptions.None;
+            IAccountSelectionStrategy strategy = null;
+            
+            this.asset = this.context.Assets.CreateFromFile("smallwmv1.wmv", AssetCreationOptions.None);
+
+            this.context.Jobs.CreateWithSingleTask(mediaProcessorName, taskConfiguration, this.asset, strategy, outputAssetName, outputAssetOptions);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ShouldThrowCreateWithSingleTaskIfMediaProcessorNameIsUnknown()
         {

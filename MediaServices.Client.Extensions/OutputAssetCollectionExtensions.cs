@@ -39,7 +39,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentNullException("strategy");
             }
 
-            string storageAccount = strategy.SelectAccountForAssets();
+            string storageAccount = strategy.SelectAccountForAsset();
 
             return collection.AddNew(assetName, storageAccount, options);
         }

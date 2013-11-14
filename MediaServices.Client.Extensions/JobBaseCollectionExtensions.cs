@@ -89,5 +89,28 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         {
             return jobs.CreateWithSingleTask(mediaProcessorName, taskConfiguration, inputAsset, outputAssetName, null, outputAssetOptions);
         }
+
+        /// <summary>
+        /// Returns a <see cref="IJob"/> instance with a single <see cref="ITask"/> ready to be submitted.
+        /// </summary>
+        /// <param name="jobs">The <see cref="JobBaseCollection"/> instance.</param>
+        /// <param name="mediaProcessorName">The name of the media processor.</param>
+        /// <param name="taskConfiguration">The task configuration.</param>
+        /// <param name="inputAsset">The input <see cref="IAsset"/> instance.</param>
+        /// <param name="strategy">The <see cref="IAccountSelectionStrategy"/> instance used to pick the output asset storage account.</param>
+        /// <param name="outputAssetName">The name of the output asset.</param>
+        /// <param name="outputAssetOptions">The <see cref="AssetCreationOptions"/> of the output asset.</param>
+        /// <returns>A <see cref="IJob"/> instance with a single <see cref="ITask"/> ready to be submitted.</returns>
+        public static IJob CreateWithSingleTask(this JobBaseCollection jobs, string mediaProcessorName, string taskConfiguration, IAsset inputAsset, IAccountSelectionStrategy strategy, string outputAssetName, AssetCreationOptions outputAssetOptions)
+        {
+            if (strategy == null)
+            {
+                throw new ArgumentNullException("strategy");
+            }
+
+            string outputAssetStorageAccount = strategy.SelectAccountForAsset();
+
+            return jobs.CreateWithSingleTask(mediaProcessorName, taskConfiguration, inputAsset, outputAssetName, outputAssetStorageAccount, outputAssetOptions);
+        }
     }
 }

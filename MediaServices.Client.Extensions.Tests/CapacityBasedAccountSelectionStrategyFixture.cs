@@ -110,7 +110,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             try
             {
-                strategy.SelectAccountForAssets();
+                strategy.SelectAccountForAsset();
             }
             catch (InvalidOperationException e)
             {
@@ -152,7 +152,7 @@ namespace MediaServices.Client.Extensions.Tests
             MediaContextBase context = GetMediaContextBase(storageAccountList);
             CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity:oneGB);
 
-            string accountNameToUse = strategy.SelectAccountForAssets();
+            string accountNameToUse = strategy.SelectAccountForAsset();
 
             Assert.IsNotNull(accountNameToUse);
             Assert.AreEqual(0, _oneZeroBytesUsedValues[1].Value);
@@ -174,7 +174,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets();
+                string accountNameToUse = strategy.SelectAccountForAsset();
                 Assert.AreEqual(storageAccountList[i].Name, accountNameToUse);
             }
 
@@ -194,7 +194,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets();
+                string accountNameToUse = strategy.SelectAccountForAsset();
                 Assert.AreEqual(storageAccountList[i].Name, accountNameToUse);
             }
 
@@ -212,7 +212,7 @@ namespace MediaServices.Client.Extensions.Tests
             string[] expectedAccountNames = new string[] { _fiveStorageAccountNameArray[1], _fiveStorageAccountNameArray[1], _fiveStorageAccountNameArray[2], _fiveStorageAccountNameArray[2] };
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets();
+                string accountNameToUse = strategy.SelectAccountForAsset();
                 Assert.AreEqual(expectedAccountNames[i], accountNameToUse);
             }
 
@@ -229,7 +229,7 @@ namespace MediaServices.Client.Extensions.Tests
             expectedAccountNames = new string[] { _fiveStorageAccountNameArray[0], _fiveStorageAccountNameArray[0], _fiveStorageAccountNameArray[3], _fiveStorageAccountNameArray[3] };
             for (int i = 0; i < storageAccountList.Count; i++)
             {
-                string accountNameToUse = strategy.SelectAccountForAssets();
+                string accountNameToUse = strategy.SelectAccountForAsset();
                 Assert.AreEqual(expectedAccountNames[i], accountNameToUse);
             }
 
@@ -249,7 +249,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             try
             {
-                string accountNameToUse = strategy.SelectAccountForAssets();
+                string accountNameToUse = strategy.SelectAccountForAsset();
             }
             catch (InvalidOperationException e)
             {
@@ -275,10 +275,10 @@ namespace MediaServices.Client.Extensions.Tests
             CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB, storageAccountNames:filterArray);
 
             // Now ensure that the internal list only has the expected number of entries.
-            IList<CapacityBaseAccountSelectionStrategyListEntry> accountListFromStrategy = strategy.GetStorageAccounts();
+            IList<CapacityBasedAccountSelectionStrategyListEntry> accountListFromStrategy = strategy.GetStorageAccounts();
             Assert.AreEqual(filterArray.Length, accountListFromStrategy.Count);
 
-            foreach (CapacityBaseAccountSelectionStrategyListEntry entry in accountListFromStrategy)
+            foreach (CapacityBasedAccountSelectionStrategyListEntry entry in accountListFromStrategy)
             {
                 Assert.AreNotEqual(nameSkipped, entry.StorageAccount.Name);
             }
@@ -295,10 +295,10 @@ namespace MediaServices.Client.Extensions.Tests
 
         private void VerifyStrategyEntriesMatchExpectations(List<IStorageAccount> expectedList, CapacityBasedAccountSelectionStrategy strategy, long maximumStorageAccountCapacity, bool considerFullCapacityIfNoDataAvailable)
         {
-            IList<CapacityBaseAccountSelectionStrategyListEntry> accountListFromStrategy = strategy.GetStorageAccounts();
+            IList<CapacityBasedAccountSelectionStrategyListEntry> accountListFromStrategy = strategy.GetStorageAccounts();
             Assert.AreEqual(expectedList.Count, accountListFromStrategy.Count);
 
-            foreach (CapacityBaseAccountSelectionStrategyListEntry entry in accountListFromStrategy)
+            foreach (CapacityBasedAccountSelectionStrategyListEntry entry in accountListFromStrategy)
             {
                 IStorageAccount accountFromExpectedList = expectedList.Where(st => st.Name == entry.StorageAccount.Name).SingleOrDefault();
 

@@ -86,7 +86,7 @@ namespace MediaServices.Client.Extensions.Tests
             var selectedStorageAccounts = new Dictionary<string, int>();
             for (int i = 0; i < 50; i++)
             {
-                var selectedStorageAccount = selectionStrategy.SelectAccountForAssets();
+                var selectedStorageAccount = selectionStrategy.SelectAccountForAsset();
                 if (!selectedStorageAccounts.ContainsKey(selectedStorageAccount))
                 {
                     selectedStorageAccounts.Add(selectedStorageAccount, 0);

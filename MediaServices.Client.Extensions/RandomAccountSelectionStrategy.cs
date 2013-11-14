@@ -72,7 +72,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// Selects a single storage account name from the storage account names provided when the class is constructed using a pseudo random selection based on the <see cref="System.Random"/> class.
         /// </summary>
         /// <returns>A single storage account name</returns>
-        public string SelectAccountForAssets()
+        public string SelectAccountForAsset()
         {
             return _storageAccountNames[this.random.Next(0, _storageAccountNames.Length)];
         }

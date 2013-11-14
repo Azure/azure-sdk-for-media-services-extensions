@@ -97,7 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetBaseCollectionExtensions.cs" />
-    <Compile Include="CapacityBaseAccountSelectionStrategyListEntry.cs" />
+    <Compile Include="CapacityBasedAccountSelectionStrategyListEntry.cs" />
     <Compile Include="CapacityBasedAccountSelectionStrategy.cs" />
     <Compile Include="IAccountSelectionStrategy.cs" />
     <Compile Include="OutputAssetCollectionExtensions.cs" />

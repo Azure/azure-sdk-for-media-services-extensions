@@ -24,6 +24,6 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// Selects a single storage account name from the internal list of storage accounts.
         /// </summary>
         /// <returns>The storage account name to use for creating a new asset.</returns>
-        string SelectAccountForAssets();
+        string SelectAccountForAsset();
     }
 }

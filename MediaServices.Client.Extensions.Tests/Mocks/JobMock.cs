@@ -25,6 +25,11 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
     {
         public event EventHandler<JobStateChangedEventArgs> StateChanged;
 
+        public void Refresh()
+        {
+            throw new NotImplementedException();
+        }
+
         public string Id { get; set; }
 
         public string Name { get; set; }

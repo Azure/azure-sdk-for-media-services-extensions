@@ -77,7 +77,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                             double previousOverallProgress = refreshedJob.GetOverallProgress();
 
                             IMediaDataServiceContext dataContext = refreshedJob.GetMediaContext().MediaServicesClassFactory.CreateDataServiceContext();
-                            refreshedJob.JobEntityRefresh(dataContext);
+                            refreshedJob.Refresh();
 
                             if ((executionProgressChangedCallback != null) && ((refreshedJob.State != previousState) || (refreshedJob.GetOverallProgress() != previousOverallProgress)))
                             {
@@ -126,14 +126,5 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             return context;
         }
 
-        private static void JobEntityRefresh(this IJob job, IMediaDataServiceContext dataContext)
-        {
-            const string JobEntityRefreshMethodName = "JobEntityRefresh";
-
-            System.Reflection.MethodInfo jobEntityRefreshMethod = job
-                .GetType()
-                .GetMethod(JobEntityRefreshMethodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            jobEntityRefreshMethod.Invoke(job, new object[] { dataContext });
-        }
     }
 }

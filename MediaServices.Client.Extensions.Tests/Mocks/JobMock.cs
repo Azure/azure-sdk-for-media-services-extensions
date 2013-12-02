@@ -13,6 +13,8 @@
 // limitations under the License.
 // </license>
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace MediaServices.Client.Extensions.Tests.Mocks
 {
     using System;
@@ -23,7 +25,9 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
 
     public class JobMock : IJob
     {
+        #pragma warning disable 0067
         public event EventHandler<JobStateChangedEventArgs> StateChanged;
+        #pragma warning restore 0067
 
         public void Refresh()
         {

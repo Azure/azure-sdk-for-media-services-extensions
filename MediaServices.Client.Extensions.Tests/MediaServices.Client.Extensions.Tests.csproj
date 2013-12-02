@@ -152,7 +152,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>"$(SolutionDir)\.nuget\NuGet.exe" install "$(ProjectDir)packages.config" -OutputDirectory  "$([System.IO.Path]::GetFullPath('$(ProjectDir)..\packages'))"</PreBuildEvent>
+    <PreBuildEvent>"$([System.IO.Path]::GetFullPath('$(ProjectDir)\..\.nuget\NuGet.exe'))" install "$(ProjectDir)packages.config" -OutputDirectory  "$([System.IO.Path]::GetFullPath('$(ProjectDir)..\packages'))"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Label="SlowCheetah">
     <SlowCheetahToolsPath>$([System.IO.Path]::GetFullPath( $(MSBuildProjectDirectory)\..\packages\SlowCheetah.2.5.10.3\tools\))</SlowCheetahToolsPath>
@@ -160,8 +160,11 @@
     <SlowCheetah_NuGetImportPath Condition=" '$(SlowCheetah_NuGetImportPath)'=='' ">$([System.IO.Path]::GetFullPath( $(MSBuildProjectDirectory)\Properties\SlowCheetah\SlowCheetah.Transforms.targets ))</SlowCheetah_NuGetImportPath>
     <SlowCheetahTargets Condition=" '$(SlowCheetah_EnableImportFromNuGet)'=='true' and Exists('$(SlowCheetah_NuGetImportPath)') ">$(SlowCheetah_NuGetImportPath)</SlowCheetahTargets>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="BeforeBuild">
+  <PropertyGroup Label="Nuget">
+    <NugetTargetPath>$([System.IO.Path]::GetFullPath($(ProjectDir)\..\.nuget\NuGet.targets)) </NugetTargetPath>
+  </PropertyGroup>
+  <Import  Project="$(NugetTargetPath)" Condition="Exists($(NugetTargetPath))" />
+    <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
   </Target>

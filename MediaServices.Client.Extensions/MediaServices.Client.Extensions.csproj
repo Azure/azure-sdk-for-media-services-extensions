@@ -48,7 +48,7 @@
   <PropertyGroup Condition=" '$(SigningFlag)' == 'DELAYSIGNED' ">
     <SignAssembly>false</SignAssembly>
     <DelaySign>true</DelaySign>
-    <AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>extension.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

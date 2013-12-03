@@ -43,12 +43,12 @@
   <PropertyGroup Condition=" '$(SigningFlag)' == 'SIGNED' ">
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
-    <AssemblyOriginatorKeyFile>extension.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>extension.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(SigningFlag)' == 'DELAYSIGNED' ">
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
-    <AssemblyOriginatorKeyFile>extension.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>extension.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

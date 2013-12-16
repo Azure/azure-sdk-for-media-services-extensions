@@ -7,19 +7,7 @@ A NuGet package that contains a set of extension methods and helpers for the Win
 ## Usage
 Install the [WindowsAzure.MediaServices.Extensions](https://www.nuget.org/packages/WindowsAzure.MediaServices.Extensions) Nuget package by running `Install-Package WindowsAzure.MediaServices.Extensions` in the [Package Manager Console](http://docs.nuget.org/docs/start-here/using-the-package-manager-console/).
 
-After installing the package, a **MediaServicesExtensions** folder will be added to your project's root directory containing the following files:
-- _AssetBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [AssetBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection.aspx) class.
-- _IAssetExtensions.cs_: Contains extension methods and helpers for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface.
-- _JobBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [JobBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.jobbasecollection.aspx) class.
-- _IJobExtensions.cs_: Contains extension methods and helpers for the [IJob](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ijob.aspx) interface.
-- _LocatorBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [LocatorBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.locatorbasecollection.aspx) class.
-- _ILocatorExtensions.cs_: Contains extension methods for to the [ILocator](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ilocator.aspx) interface.
-- _MediaProcessorBaseCollectionExtensions.cs_: Contains extension methods and helpers for the [MediaProcessorBaseCollection](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.mediaprocessorbasecollection.aspx) class.
-- _MediaEncoderTaskPresetStrings.cs_: Contains constants with the names of the available [Task Preset Strings for the Windows Azure Media Encoder](http://msdn.microsoft.com/en-us/library/windowsazure/jj129582.aspx).
-- _MediaProcessorNames.cs_: Contains constants with the names of the available [Media Processors](http://msdn.microsoft.com/en-us/library/windowsazure/jj129580.aspx).
-- _IAccountSelectionStrategy.cs_: Defines account selection logic within asset creation scenarios.
-- _RandomAccountSelectionStrategy.cs_: Represents a simple pseudo random account selection based on the [Random](http://msdn.microsoft.com/library/system.random.aspx) class.
-- _MediaServicesExceptionParser.cs_: Contains helper methods to parse Windows Azure Media Services error messages in XML format.
+After installing the package, the **Microsoft.WindowsAzure.MediaServices.Client.Extensions** assembly will be added to your project's references.
 
 ## Extension Methods and Helpers available
 

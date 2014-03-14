@@ -90,6 +90,32 @@ string folderPath = @"C:\AssetFilesFolder";
 asset.DownloadToFolder(folderPath);
 ```
 
+### Get Asset metadata
+Get the parsed [Media Services Encoder Metadata](http://msdn.microsoft.com/en-us/library/windowsazure/dn303381.aspx) for the whole asset out of the metadata asset file using a single extension method for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface. There are additional overloads with different parameters and _async_ support.
+```csharp
+// The asset encoded with the Windows Media Services Encoder. Get a reference to it from the context.
+IAsset asset = null;
+
+// Get an enumerator with the metadata for all the asset files.
+IEnumerable<AssetFileMetadata> manifestAssetFile = asset.GetMetadata();
+```
+
+### Get Asset File metadata
+Get the parsed [Media Services Encoder Metadata](http://msdn.microsoft.com/en-us/library/windowsazure/dn303381.aspx) for an asset file out of the metadata asset file using a single extension method for the [IAssetFile](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iassetfile.aspx) interface. There are additional overloads with different parameters and _async_ support.
+```csharp
+// The asset encoded with the Windows Media Services Encoder. Get a reference to it from the context.
+IAsset asset = null;
+
+// Get a SAS locator for the asset (make sure to create one first).
+ILocator sasLocator = asset.Locators.Where(l => l.Type == LocatorType.Sas).First();
+
+// Get one of the asset files.
+IAssetFile assetFile = asset.AssetFiles.ToList().Where(af => af.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)).First();
+
+// Get the metadata for the asset file.
+AssetFileMetadata manifestAssetFile = assetFile.GetMetadata(sasLocator);
+```
+
 ### Get manifest Asset File
 Get a reference to the asset file that represents the ISM manifest using a single extension method for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface.
 ```csharp

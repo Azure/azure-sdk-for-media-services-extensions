@@ -91,7 +91,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
                     XElement root = XElement.Load(assetFileMetadataStream);
                     foreach (XElement assetFileElement in root.Elements())
                     {
-                        assetFileMetadataList.Add(AssetFileMetadata.Lo  ad(assetFileElement));
+                        assetFileMetadataList.Add(AssetFileMetadata.Load(assetFileElement));
                     }
                 }
             }

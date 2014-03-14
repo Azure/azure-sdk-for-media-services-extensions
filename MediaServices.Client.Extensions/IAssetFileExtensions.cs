@@ -66,7 +66,10 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 
                 IEnumerable<AssetFileMetadata> assetMetadata = await asset.GetMetadataAsync(sasLocator, cancellationToken);
 
-                assetFileMetadata = assetMetadata.FirstOrDefault(am => assetFile.Name.Equals(am.Name, StringComparison.OrdinalIgnoreCase));
+                if (assetMetadata != null)
+                {
+                    assetFileMetadata = assetMetadata.FirstOrDefault(am => assetFile.Name.Equals(am.Name, StringComparison.OrdinalIgnoreCase));
+                }
             }
 
             return assetFileMetadata;

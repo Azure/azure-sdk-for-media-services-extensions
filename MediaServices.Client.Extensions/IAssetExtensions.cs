@@ -301,13 +301,23 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         }
 
         /// <summary>
-        /// Returns the HLS URL of the <paramref name="asset"/> using the on-demand origin locator with the longest expiration time; otherwise, null.
+        /// Returns the HLS version 4 URL of the <paramref name="asset"/> using the on-demand origin locator with the longest expiration time; otherwise, null.
         /// </summary>
         /// <param name="asset">The <see cref="IAsset"/> instance.</param>
-        /// <returns>A <see cref="System.Uri"/> representing the HLS URL of the <paramref name="asset"/>; otherwise, null.</returns>
+        /// <returns>A <see cref="System.Uri"/> representing the HLS version 4 URL of the <paramref name="asset"/>; otherwise, null.</returns>
         public static Uri GetHlsUri(this IAsset asset)
         {
             return asset.GetStreamingUri(ILocatorExtensions.HlsStreamingParameter);
+        }
+
+        /// <summary>
+        /// Returns the HLS version 3 URL of the <paramref name="asset"/> using the on-demand origin locator with the longest expiration time; otherwise, null.
+        /// </summary>
+        /// <param name="asset">The <see cref="IAsset"/> instance.</param>
+        /// <returns>A <see cref="System.Uri"/> representing the HLS version 3 URL of the <paramref name="asset"/>; otherwise, null.</returns>
+        public static Uri GetHlsv3Uri(this IAsset asset)
+        {
+            return asset.GetStreamingUri(ILocatorExtensions.Hlsv3StreamingParameter);
         }
 
         /// <summary>

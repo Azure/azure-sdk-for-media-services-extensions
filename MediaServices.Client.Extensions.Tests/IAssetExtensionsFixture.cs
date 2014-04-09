@@ -551,6 +551,23 @@ namespace MediaServices.Client.Extensions.Tests
 
         [TestMethod]
         [DeploymentItem(@"Media\dummy.ism")]
+        public void ShouldGetHlsv3Uri()
+        {
+            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
+
+            var locator = this.context.Locators.Create(LocatorType.OnDemandOrigin, this.asset, AccessPermissions.Read, TimeSpan.FromDays(1));
+
+            var hlsv3Uri = this.asset.GetHlsv3Uri();
+
+            Assert.IsNotNull(hlsv3Uri);
+            Assert.IsTrue(
+                hlsv3Uri
+                    .AbsoluteUri
+                    .EndsWith(locator.ContentAccessComponent + "/dummy.ism/manifest(format=m3u8-aapl-v3)", StringComparison.OrdinalIgnoreCase));
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\dummy.ism")]
         public void ShouldGetMpegDashUri()
         {
             this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);

@@ -165,7 +165,6 @@ Get the Smooth Streaming URL of a multi-bitrate Smooth Streaming or MP4 asset us
 // The Origin locator for the multi-bitrate Smooth Streaming or MP4 asset. Get a reference to it from the context.
 ILocator originLocator = null;
 
-
 // Get the Smooth Streaming URL of the locator's asset for adaptive streaming.
 Uri smoothStreamingUri = originLocator.GetSmoothStreamingUri();
 ```
@@ -187,8 +186,6 @@ Get the HLS version 4 URL of a multi-bitrate Smooth Streaming or MP4 asset using
 ```csharp
 // The Origin locator for the multi-bitrate Smooth Streaming or MP4 asset. Get a reference to it from the context.
 ILocator originLocator = null;
-
-// Make sure to create an Origin locator for the asset.
 
 // Get the HLS version 4 URL of the locator's asset for adaptive streaming.
 Uri hlsv4Uri = originLocator.GetHlsUri();
@@ -212,8 +209,6 @@ Get the HLS version 3 URL of a multi-bitrate Smooth Streaming or MP4 asset using
 // The Origin locator for the multi-bitrate Smooth Streaming or MP4 asset. Get a reference to it from the context.
 ILocator originLocator = null;
 
-// Make sure to create an Origin locator for the asset.
-
 // Get the HLS version 3 URL of the locator's asset for adaptive streaming.
 Uri hlsv3Uri = originLocator.GetHlsv3Uri();
 ```
@@ -226,7 +221,7 @@ IAsset asset = null;
 
 // Make sure to create an Origin locator for the asset.
 
-// Get the MPEG-DASH URL of the locator's asset for adaptive streaming.
+// Get the MPEG-DASH URL of the asset for adaptive streaming.
 Uri mpegDashUri = asset.GetMpegDashUri();
 ```
 
@@ -236,9 +231,7 @@ Get the MPEG-DASH URL of a multi-bitrate Smooth Streaming or MP4 asset using a s
 // The Origin locator for the multi-bitrate Smooth Streaming or MP4 asset. Get a reference to it from the context.
 ILocator originLocator = null;
 
-// Make sure to create an Origin locator for the asset.
-
-// Get the MPEG-DASH URL of the asset for adaptive streaming.
+// Get the MPEG-DASH URL of the locator's asset for adaptive streaming.
 Uri mpegDashUri = originLocator.GetMpegDashUri();
 ```
 

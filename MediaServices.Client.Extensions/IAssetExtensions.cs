@@ -56,7 +56,8 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             await context
                 .MediaServicesClassFactory
                 .CreateDataServiceContext()
-                .ExecuteAsync(uriCreateFileInfos, null, "GET");
+                .ExecuteAsync(uriCreateFileInfos, null, "GET")
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -114,9 +115,10 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 Uri assetFileMetadataUri = metadataAssetFile.GetSasUri(sasLocator);
 
                 assetMetadata = await AssetMetadataParser.ParseAssetFileMetadataAsync(
-                    assetFileMetadataUri,
-                    context.MediaServicesClassFactory.GetBlobStorageClientRetryPolicy().AsAzureStorageClientRetryPolicy(),
-                    cancellationToken);
+                        assetFileMetadataUri,
+                        context.MediaServicesClassFactory.GetBlobStorageClientRetryPolicy().AsAzureStorageClientRetryPolicy(),
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             return assetMetadata;
@@ -137,11 +139,11 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 
             MediaContextBase context = asset.GetMediaContext();
 
-            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Read, AssetBaseCollectionExtensions.DefaultAccessPolicyDuration);
+            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Read, AssetBaseCollectionExtensions.DefaultAccessPolicyDuration).ConfigureAwait(false);
 
-            IEnumerable<AssetFileMetadata> assetMetadata = await asset.GetMetadataAsync(sasLocator, cancellationToken);
+            IEnumerable<AssetFileMetadata> assetMetadata = await asset.GetMetadataAsync(sasLocator, cancellationToken).ConfigureAwait(false);
 
-            await sasLocator.DeleteAsync();
+            await sasLocator.DeleteAsync().ConfigureAwait(false);
 
             return assetMetadata;
         }
@@ -197,7 +199,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 
             MediaContextBase context = asset.GetMediaContext();
 
-            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Read, AssetBaseCollectionExtensions.DefaultAccessPolicyDuration);
+            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Read, AssetBaseCollectionExtensions.DefaultAccessPolicyDuration).ConfigureAwait(false);
 
             EventHandler<DownloadProgressChangedEventArgs> downloadProgressChangedHandler =
                 (s, e) =>
@@ -228,9 +230,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                     assetFile.DownloadAsync(Path.GetFullPath(localDownloadPath), blobTransferClient, sasLocator, cancellationToken));
             }
 
-            await Task.Factory.ContinueWhenAll(downloadTasks.ToArray(), t => t, TaskContinuationOptions.ExecuteSynchronously);
+            await Task.Factory.ContinueWhenAll(downloadTasks.ToArray(), t => t, TaskContinuationOptions.ExecuteSynchronously).ConfigureAwait(false);
 
-            await sasLocator.DeleteAsync();
+            await sasLocator.DeleteAsync().ConfigureAwait(false);
 
             assetFiles.ForEach(af => af.DownloadProgressChanged -= downloadProgressChangedHandler);
         }
@@ -356,7 +358,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         internal static async Task<IAssetFile> CreateAssetFileFromLocalFileAsync(this IAsset asset, string filePath, ILocator sasLocator, EventHandler<UploadProgressChangedEventArgs> uploadProgressChangedEventArgs, CancellationToken cancellationToken)
         {
             string assetFileName = Path.GetFileName(filePath);
-            IAssetFile assetFile = await asset.AssetFiles.CreateAsync(assetFileName, cancellationToken);
+            IAssetFile assetFile = await asset.AssetFiles.CreateAsync(assetFileName, cancellationToken).ConfigureAwait(false);
             MediaContextBase context = asset.GetMediaContext();
 
             assetFile.UploadProgressChanged += uploadProgressChangedEventArgs;
@@ -367,14 +369,14 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 ParallelTransferThreadCount = context.ParallelTransferThreadCount
             };
 
-            await assetFile.UploadAsync(filePath, blobTransferClient, sasLocator, cancellationToken);
+            await assetFile.UploadAsync(filePath, blobTransferClient, sasLocator, cancellationToken).ConfigureAwait(false);
 
             assetFile.UploadProgressChanged -= uploadProgressChangedEventArgs;
 
             if (assetFileName.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase))
             {
                 assetFile.IsPrimary = true;
-                await assetFile.UpdateAsync();
+                await assetFile.UpdateAsync().ConfigureAwait(false);
             }
 
             return assetFile;

@@ -84,7 +84,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
                 using (var assetFileMetadataStream = new MemoryStream())
                 {
                     CloudBlockBlob blob = new CloudBlockBlob(assetFileMetadataUri);
-                    await blob.DownloadToStreamAsync(assetFileMetadataStream, null, new BlobRequestOptions { RetryPolicy = retryPolicy }, null, cancellationToken);
+                    await blob.DownloadToStreamAsync(assetFileMetadataStream, null, new BlobRequestOptions { RetryPolicy = retryPolicy }, null, cancellationToken).ConfigureAwait(false);
 
                     assetFileMetadataStream.Seek(0, SeekOrigin.Begin);
 

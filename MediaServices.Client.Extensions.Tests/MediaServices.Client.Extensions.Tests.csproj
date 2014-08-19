@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetBaseCollectionExtensionsFixture.cs" />
+    <Compile Include="IAssetFileExtensionsFixture.cs" />
     <Compile Include="Mocks\MediaContextBaseMock.cs" />
     <Compile Include="Mocks\RandomNumberGeneratorMock.cs" />
     <Compile Include="Mocks\StorageAccountBaseCollectionMock.cs" />

@@ -13,6 +13,9 @@
 // limitations under the License.
 // </license>
 
+using Microsoft.WindowsAzure.MediaServices.Client.ContentKeyAuthorization;
+using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
+
 namespace MediaServices.Client.Extensions.Tests.Mocks
 {
     using System;
@@ -34,6 +37,41 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
             }
 
             this.MediaServicesClassFactory = new AzureMediaServicesClassFactory();
+        }
+
+        public override ContentKeyAuthorizationPolicyOptionCollection ContentKeyAuthorizationPolicyOptions
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override ContentKeyAuthorizationPolicyCollection ContentKeyAuthorizationPolicies
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override AssetDeliveryPolicyCollection AssetDeliveryPolicies
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override ChannelBaseCollection Channels
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override ProgramBaseCollection Programs
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override StreamingEndpointBaseCollection StreamingEndpoints
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override OperationBaseCollection Operations
+        {
+            get { throw new NotImplementedException(); }
         }
 
         public override AccessPolicyBaseCollection AccessPolicies { get { throw new NotImplementedException(); } }

@@ -107,3 +107,6 @@ UpgradeLog*.XML
 # NuGet
 packages/
 /microsoft-azure-api/Services/Storage/Test/Unit/RT/AppPackages/
+/MediaServices.Client.Extensions.Tests/App.Debug.config
+/MediaServices.Client.Extensions.Tests/App.Release.config
+/MediaServices.Client.Extensions.sln.GhostDoc.xml

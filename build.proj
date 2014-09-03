@@ -9,8 +9,13 @@
 	<MediaSln Include=".\MediaServices.Client.Extensions.Tests\MediaServices.Client.Extensions.Tests.csproj" />
   </ItemGroup>
   
+  <ItemGroup>
+    <MediaSrc Include=".\MediaServices.Client.Extensions\MediaServices.Client.Extensions.csproj" />
+  </ItemGroup>
+  
    <!-- Define build properties -->
   <PropertyGroup>
+	<NugetDirectory>.\.nuget</NugetDirectory>
     <SourceBin>.\MediaServices.Client.Extensions\bin</SourceBin>
     <TestDirectory>.\MediaServices.Client.Extensions.Tests</TestDirectory>
     <TestAssemblyName>.\MediaServices.Client.Extensions.Tests\bin\debug\MediaServices.Client.Extensions.Tests.dll</TestAssemblyName>	
@@ -88,8 +93,12 @@
       ContinueOnError="true" />
 	
   </Target>
+  <Target Name="RestorePackages">  
+    <Exec Command="&quot;$(NugetDirectory)\NuGet.exe&quot; restore &quot;.\MediaServices.Client.Extensions.sln&quot;" />	
+  </Target>
   
-   <Target Name="Build" DependsOnTargets="Clean;BuildDebug;BuildRelease" />
+  
+   <Target Name="Build" DependsOnTargets="RestorePackages;Clean;BuildDebug;BuildRelease" />
   
    <!-- Publish any build artificates to the Publish directory -->
   <Target Name="Publish" DependsOnTargets="Build">
@@ -103,6 +112,7 @@
     <MakeDir
       Directories="$(BuildOutputDirectory)"
       ContinueOnError="false" />
+	  
 	  
     <Copy
       SourceFiles="@(DebugFiles)"

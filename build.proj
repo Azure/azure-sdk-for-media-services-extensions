@@ -8,11 +8,8 @@
     <MediaSln Include=".\MediaServices.Client.Extensions\MediaServices.Client.Extensions.csproj" />
 	<MediaSln Include=".\MediaServices.Client.Extensions.Tests\MediaServices.Client.Extensions.Tests.csproj" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <MediaSrc Include=".\MediaServices.Client.Extensions\MediaServices.Client.Extensions.csproj" />
-  </ItemGroup>
-  
+    
+
    <!-- Define build properties -->
   <PropertyGroup>
 	<NugetDirectory>.\.nuget</NugetDirectory>

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>windowsazure.mediaservices.extensions</id>
+        <version>2.0.0.2</version>
+        <title>Windows Azure Media Services .NET SDK Extensions</title>
+        <authors>Microsoft Corporation</authors>
+        <owners>Microsoft Corporation</owners>
+        <projectUrl>https://github.com/WindowsAzure/azure-sdk-for-media-services-extensions</projectUrl>
+        <iconUrl>http://nimbuspmteam.blob.core.windows.net/nuget/Media%20Services%20150.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>A NuGet package that contains a set of extension methods and helpers for the Windows Azure Media Services SDK for .NET.</description>
+        <copyright>Copyright 2013 Microsoft Corporation. All Rights Reserved</copyright>
+        <language>en-US</language>
+        <tags>windowsazureoffical Microsoft WindowsAzure MediaServices</tags>
+        <dependencies>
+            <dependency id="Microsoft.Bcl" version="1.1.6" />
+            <dependency id="Microsoft.Bcl.Async" version="1.0.165" />
+            <dependency id="Microsoft.Bcl.Build" version="1.0.13" />
+            <dependency id="Microsoft.Data.OData" version="5.6.0" />
+			<dependency id="Microsoft.Data.Edm" version="5.6.0" />
+			<dependency id="Microsoft.Data.Services.Client" version="5.6.0" />
+			<dependency id="System.Spatial" version="5.6.0" />
+			<dependency id="TransientFaultHandling.Core" version="5.1.1209.1" />
+			<dependency id="WindowsAzure.Storage" version="3.1.0.0" />
+			<dependency  id="Microsoft.WindowsAzure.ConfigurationManager" version="2.0.3.0" />
+			<dependency id="Newtonsoft.Json" version="6.0.3.0" />
+            <dependency id="WindowsAzure.MediaServices" version="3.0.0.7" />
+        </dependencies>
+    </metadata>
+</package>

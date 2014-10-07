@@ -17,10 +17,8 @@ namespace MediaServices.Client.Extensions.Tests
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Configuration;
     using System.IO;
     using System.Linq;
-    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -30,8 +28,281 @@ namespace MediaServices.Client.Extensions.Tests
     [TestClass]
     public class IAssetExtensionsFixture
     {
+        private static readonly int[] TargetBitrates = { 1000, 1500, 2250, 3400, 400, 650 };
+        private static readonly int[] Widths = { 480, 720, 720, 960, 240, 480 };
+        private static readonly int[] Heights = { 360, 540, 540, 720, 180, 360 };
+
         private CloudMediaContext context;
         private IAsset asset;
+        private IAsset outputAsset;
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowGetAssetMetadataIfAssetIsNull()
+        {
+            try
+            {
+                IAsset nullAsset = null;
+
+                nullAsset.GetMetadata();
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw exception.InnerException;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ShouldThrowGetAssetMetadataWithSpecificLocatorIfAssetIsNull()
+        {
+            try
+            {
+                IAsset nullAsset = null;
+
+                var sasLocator = this.context.Locators.Where(l => l.Type == LocatorType.Sas).FirstOrDefault();
+
+                nullAsset.GetMetadata(sasLocator);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw exception.InnerException;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        [DeploymentItem(@"Media\dummy.ism")]
+        public void ShouldThrowGetAssetMetadataIfLocatorIsNull()
+        {
+            try
+            {
+                this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
+
+                this.asset.GetMetadata(null);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw exception.InnerException;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        [DeploymentItem(@"Media\dummy.ism")]
+        public void ShouldThrowGetAssetMetadataIfLocatorTypeIsNotSas()
+        {
+            try
+            {
+                this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
+
+                var originLocator = this.context.Locators.Create(LocatorType.OnDemandOrigin, this.asset, AccessPermissions.Read, TimeSpan.FromDays(1));
+
+                this.asset.GetMetadata(originLocator);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw exception.InnerException;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        [DeploymentItem(@"Media\dummy.ism")]
+        public void ShouldThrowGetAssetMetadataIfLocatorDoesNotBelongToParentAsset()
+        {
+            try
+            {
+                var asset2 = this.context.Assets.Create("empty", AssetCreationOptions.None);
+                var sasLocator = this.context.Locators.Create(LocatorType.Sas, asset2, AccessPermissions.Read, TimeSpan.FromDays(1));
+
+                this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
+
+                try
+                {
+                    this.asset.GetMetadata(sasLocator);
+                }
+                finally
+                {
+                    if (asset2 != null)
+                    {
+                        asset2.Delete();
+                    }
+                }
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw exception.InnerException;
+            }
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\dummy.ism")]
+        public void ShouldReturnNullGetAssetMetadataIfAssetDoesNotContainMetadataFile()
+        {
+            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
+
+            var assetMetadata = this.asset.GetMetadata();
+
+            Assert.IsNull(assetMetadata);
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        public void ShouldGetAssetMetadata()
+        {
+            var source = "smallwmv1.wmv";
+            this.asset = this.context.Assets.CreateFromFile(source, AssetCreationOptions.None);
+
+            var job = this.context.Jobs.CreateWithSingleTask(
+                MediaProcessorNames.WindowsAzureMediaEncoder,
+                MediaEncoderTaskPresetStrings.H264AdaptiveBitrateMP4Set720p,
+                this.asset,
+                "Output Asset Name",
+                AssetCreationOptions.None);
+
+            job.Submit();
+            job.GetExecutionProgressTask(CancellationToken.None).Wait();
+
+            this.outputAsset = job.OutputMediaAssets[0];
+
+            var assetMetadata = this.outputAsset.GetMetadata();
+
+            Assert.AreEqual(0, this.outputAsset.Locators.Count());
+
+            var assetFilesArray = this.outputAsset
+                .AssetFiles
+                .ToArray()
+                .Where(af => !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase) && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(af => af.Name)
+                .ToArray();
+            var assetMetadataArray = assetMetadata.OrderBy(am => am.Name).ToArray();
+
+            Assert.AreEqual(assetFilesArray.Length, assetMetadataArray.Length);
+
+            for (int i = 0; i < assetFilesArray.Length; i++)
+            {
+                Assert.AreEqual(assetFilesArray[i].Name, assetMetadataArray[i].Name);
+                Assert.AreEqual(assetFilesArray[i].ContentFileSize, assetMetadataArray[i].Size);
+                Assert.AreEqual(TimeSpan.FromSeconds(5.119), assetMetadataArray[i].Duration);
+
+                Assert.IsNotNull(assetMetadataArray[i].Sources);
+                Assert.AreEqual(1, assetMetadataArray[i].Sources.Count());
+                Assert.IsNotNull(assetMetadataArray[i].Sources.ElementAt(0));
+                Assert.AreEqual(source, assetMetadataArray[i].Sources.ElementAt(0).Name);
+
+                if (i >= 2)
+                {
+                    Assert.IsNotNull(assetMetadataArray[i].VideoTracks);
+                    Assert.AreEqual(1, assetMetadataArray[i].VideoTracks.Count());
+                    Assert.IsNotNull(assetMetadataArray[i].VideoTracks.ElementAt(0));
+                    Assert.AreEqual(0, assetMetadataArray[i].VideoTracks.ElementAt(0).Id);
+                    Assert.AreEqual("AVC1", assetMetadataArray[i].VideoTracks.ElementAt(0).FourCC);
+                    Assert.AreEqual(Widths[i - 2], assetMetadataArray[i].VideoTracks.ElementAt(0).Width);
+                    Assert.AreEqual(Heights[i - 2], assetMetadataArray[i].VideoTracks.ElementAt(0).Height);
+                    Assert.AreEqual(4, assetMetadataArray[i].VideoTracks.ElementAt(0).DisplayAspectRatioNumerator);
+                    Assert.AreEqual(3, assetMetadataArray[i].VideoTracks.ElementAt(0).DisplayAspectRatioDenominator);
+                    Assert.AreEqual(29.97, assetMetadataArray[i].VideoTracks.ElementAt(0).TargetFramerate);
+                    Assert.AreEqual(TargetBitrates[i - 2], assetMetadataArray[i].VideoTracks.ElementAt(0).TargetBitrate);
+                }
+                else
+                {
+                    Assert.IsNull(assetMetadataArray[i].VideoTracks);
+                }
+
+                Assert.IsNotNull(assetMetadataArray[i].AudioTracks);
+                Assert.AreEqual(1, assetMetadataArray[i].AudioTracks.Count());
+                Assert.IsNotNull(assetMetadataArray[i].AudioTracks.ElementAt(0));
+                Assert.IsNull(assetMetadataArray[i].AudioTracks.ElementAt(0).EncoderVersion);
+                Assert.AreEqual(0, assetMetadataArray[i].AudioTracks.ElementAt(0).Id);
+                Assert.AreEqual("AacLc", assetMetadataArray[i].AudioTracks.ElementAt(0).Codec);
+                Assert.AreEqual(2, assetMetadataArray[i].AudioTracks.ElementAt(0).Channels);
+                Assert.AreEqual(44100, assetMetadataArray[i].AudioTracks.ElementAt(0).SamplingRate);
+                Assert.AreEqual(i == 0 ? 53 : 93, assetMetadataArray[i].AudioTracks.ElementAt(0).Bitrate);
+                Assert.AreEqual(16, assetMetadataArray[i].AudioTracks.ElementAt(0).BitsPerSample);
+            }
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        public void ShouldGetAssetMetadataWithSpecificLocator()
+        {
+            var source = "smallwmv1.wmv";
+            this.asset = this.context.Assets.CreateFromFile(source, AssetCreationOptions.None);
+
+            var job = this.context.Jobs.CreateWithSingleTask(
+                MediaProcessorNames.WindowsAzureMediaEncoder,
+                MediaEncoderTaskPresetStrings.H264AdaptiveBitrateMP4Set720p,
+                this.asset,
+                "Output Asset Name",
+                AssetCreationOptions.None);
+
+            job.Submit();
+            job.GetExecutionProgressTask(CancellationToken.None).Wait();
+
+            this.outputAsset = job.OutputMediaAssets[0];
+
+            var sasLocator = this.context.Locators.Create(LocatorType.Sas, this.outputAsset, AccessPermissions.Read, TimeSpan.FromDays(1));
+
+            var assetMetadata = this.outputAsset.GetMetadata(sasLocator);
+
+            var assetFilesArray = this.outputAsset
+                .AssetFiles
+                .ToArray()
+                .Where(af => !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase) && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(af => af.Name)
+                .ToArray();
+            var assetMetadataArray = assetMetadata.OrderBy(am => am.Name).ToArray();
+
+            Assert.AreEqual(assetFilesArray.Length, assetMetadataArray.Length);
+
+            for (int i = 0; i < assetFilesArray.Length; i++)
+            {
+                Assert.AreEqual(assetFilesArray[i].Name, assetMetadataArray[i].Name);
+                Assert.AreEqual(assetFilesArray[i].ContentFileSize, assetMetadataArray[i].Size);
+                Assert.AreEqual(TimeSpan.FromSeconds(5.119), assetMetadataArray[i].Duration);
+
+                Assert.IsNotNull(assetMetadataArray[i].Sources);
+                Assert.AreEqual(1, assetMetadataArray[i].Sources.Count());
+                Assert.IsNotNull(assetMetadataArray[i].Sources.ElementAt(0));
+                Assert.AreEqual(source, assetMetadataArray[i].Sources.ElementAt(0).Name);
+
+                if (i >= 2)
+                {
+                    Assert.IsNotNull(assetMetadataArray[i].VideoTracks);
+                    Assert.AreEqual(1, assetMetadataArray[i].VideoTracks.Count());
+                    Assert.IsNotNull(assetMetadataArray[i].VideoTracks.ElementAt(0));
+                    Assert.AreEqual(0, assetMetadataArray[i].VideoTracks.ElementAt(0).Id);
+                    Assert.AreEqual("AVC1", assetMetadataArray[i].VideoTracks.ElementAt(0).FourCC);
+                    Assert.AreEqual(Widths[i - 2], assetMetadataArray[i].VideoTracks.ElementAt(0).Width);
+                    Assert.AreEqual(Heights[i - 2], assetMetadataArray[i].VideoTracks.ElementAt(0).Height);
+                    Assert.AreEqual(4, assetMetadataArray[i].VideoTracks.ElementAt(0).DisplayAspectRatioNumerator);
+                    Assert.AreEqual(3, assetMetadataArray[i].VideoTracks.ElementAt(0).DisplayAspectRatioDenominator);
+                    Assert.AreEqual(29.97, assetMetadataArray[i].VideoTracks.ElementAt(0).TargetFramerate);
+                    Assert.AreEqual(TargetBitrates[i - 2], assetMetadataArray[i].VideoTracks.ElementAt(0).TargetBitrate);
+                }
+                else
+                {
+                    Assert.IsNull(assetMetadataArray[i].VideoTracks);
+                }
+
+                Assert.IsNotNull(assetMetadataArray[i].AudioTracks);
+                Assert.AreEqual(1, assetMetadataArray[i].AudioTracks.Count());
+                Assert.IsNotNull(assetMetadataArray[i].AudioTracks.ElementAt(0));
+                Assert.IsNull(assetMetadataArray[i].AudioTracks.ElementAt(0).EncoderVersion);
+                Assert.AreEqual(0, assetMetadataArray[i].AudioTracks.ElementAt(0).Id);
+                Assert.AreEqual("AacLc", assetMetadataArray[i].AudioTracks.ElementAt(0).Codec);
+                Assert.AreEqual(2, assetMetadataArray[i].AudioTracks.ElementAt(0).Channels);
+                Assert.AreEqual(44100, assetMetadataArray[i].AudioTracks.ElementAt(0).SamplingRate);
+                Assert.AreEqual(i == 0 ? 53 : 93, assetMetadataArray[i].AudioTracks.ElementAt(0).Bitrate);
+                Assert.AreEqual(16, assetMetadataArray[i].AudioTracks.ElementAt(0).BitsPerSample);
+            }
+        }
 
         [TestMethod]
         [ExpectedException(typeof(AggregateException))]
@@ -280,6 +551,23 @@ namespace MediaServices.Client.Extensions.Tests
 
         [TestMethod]
         [DeploymentItem(@"Media\dummy.ism")]
+        public void ShouldGetHlsv3Uri()
+        {
+            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
+
+            var locator = this.context.Locators.Create(LocatorType.OnDemandOrigin, this.asset, AccessPermissions.Read, TimeSpan.FromDays(1));
+
+            var hlsv3Uri = this.asset.GetHlsv3Uri();
+
+            Assert.IsNotNull(hlsv3Uri);
+            Assert.IsTrue(
+                hlsv3Uri
+                    .AbsoluteUri
+                    .EndsWith(locator.ContentAccessComponent + "/dummy.ism/manifest(format=m3u8-aapl-v3)", StringComparison.OrdinalIgnoreCase));
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\dummy.ism")]
         public void ShouldGetMpegDashUri()
         {
             this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
@@ -302,119 +590,6 @@ namespace MediaServices.Client.Extensions.Tests
             IAsset nullAsset = null;
 
             nullAsset.GetSmoothStreamingUri();
-        }
-
-        [TestMethod]
-        [DeploymentItem(@"Media\dummy.ism")]
-        public void ShouldGetSasUri()
-        {
-            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
-
-            var locator = this.context.Locators.Create(LocatorType.Sas, this.asset, AccessPermissions.Read, TimeSpan.FromDays(1));
-
-            var assetFile = this.asset.AssetFiles.First();
-
-            var sasUri = assetFile.GetSasUri();
-
-            Assert.IsNotNull(sasUri);
-
-            var client = new HttpClient();
-            var response = client.GetAsync(sasUri, HttpCompletionOption.ResponseHeadersRead).Result;
-
-            Assert.IsTrue(response.IsSuccessStatusCode);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void ShouldThrowGetSasUriIfAssetFileIsNull()
-        {
-            IAssetFile nullAssetFile = null;
-
-            nullAssetFile.GetSasUri();
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        [DeploymentItem(@"Media\dummy.ism")]
-        public void ShouldThrowGetSasUriWithSpecificLocatorIfAssetFileIsNull()
-        {
-            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
-
-            var locator = this.context.Locators.Create(LocatorType.Sas, this.asset, AccessPermissions.Read, TimeSpan.FromDays(1));
-
-            IAssetFile nullAssetFile = null;
-
-            nullAssetFile.GetSasUri(locator);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        [DeploymentItem(@"Media\dummy.ism")]
-        public void ShouldThrowGetSasUriWithSpecificLocatorIfLocatorIsNull()
-        {
-            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
-
-            var assetFile = this.asset.AssetFiles.First();
-
-            assetFile.GetSasUri(null);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        [DeploymentItem(@"Media\dummy.ism")]
-        public void ShouldThrowGetSasUriWithSpecificLocatorIfLocatorTypeIsNotSas()
-        {
-            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
-
-            var locator = this.context.Locators.Create(LocatorType.OnDemandOrigin, this.asset, AccessPermissions.Read, TimeSpan.FromDays(1));
-
-            var assetFile = this.asset.AssetFiles.First();
-
-            assetFile.GetSasUri(locator);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        [DeploymentItem(@"Media\dummy.ism")]
-        public void ShouldThrowGetSasUriWithSpecificLocatorIfLocatorDoesNotBelongToParentAsset()
-        {
-            var asset2 = this.context.Assets.Create("empty", AssetCreationOptions.None);
-            var locator = this.context.Locators.Create(LocatorType.Sas, asset2, AccessPermissions.Read, TimeSpan.FromDays(1));
-
-            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
-            var assetFile = this.asset.AssetFiles.First();
-
-            try
-            {
-                assetFile.GetSasUri(locator);
-            }
-            finally
-            {
-                if (asset2 != null)
-                {
-                    asset2.Delete();
-                }
-            }
-        }
-
-        [TestMethod]
-        [DeploymentItem(@"Media\dummy.ism")]
-        public void ShouldGetSasUriWithSpecificLocator()
-        {
-            this.asset = this.context.Assets.CreateFromFile("dummy.ism", AssetCreationOptions.None);
-
-            var locator = this.context.Locators.Create(LocatorType.Sas, this.asset, AccessPermissions.Read, TimeSpan.FromDays(1));
-
-            var assetFile = this.asset.AssetFiles.First();
-
-            var sasUri = assetFile.GetSasUri(locator);
-
-            Assert.IsNotNull(sasUri);
-
-            var client = new HttpClient();
-            var response = client.GetAsync(sasUri, HttpCompletionOption.ResponseHeadersRead).Result;
-
-            Assert.IsTrue(response.IsSuccessStatusCode);
         }
 
         [TestMethod]
@@ -451,6 +626,11 @@ namespace MediaServices.Client.Extensions.Tests
             {
                 this.asset.Delete();
             }
+
+            if (this.outputAsset != null)
+            {
+                this.outputAsset.Delete();
+            }
         }
 
         private static void AssertDownloadedFile(string originalFolderPath, string downloadFolderPath, string fileName, DownloadProgressChangedEventArgs downloadProgressChangedEventArgs = null)
@@ -467,7 +647,7 @@ namespace MediaServices.Client.Extensions.Tests
                 Assert.AreEqual(100, downloadProgressChangedEventArgs.Progress);
             }
         }
-        
+
         private static string CreateEmptyDirectory()
         {
             var downloadFolderPath = Path.GetRandomFileName();

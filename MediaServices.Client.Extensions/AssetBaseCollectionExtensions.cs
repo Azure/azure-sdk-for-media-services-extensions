@@ -129,9 +129,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 storageAccountName = context.DefaultStorageAccount.Name;
             }
 
-            IAsset asset = await assets.CreateAsync(assetName, storageAccountName, options, cancellationToken);
+            IAsset asset = await assets.CreateAsync(assetName, storageAccountName, options, cancellationToken).ConfigureAwait(false);
 
-            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Write | AccessPermissions.List, DefaultAccessPolicyDuration);
+            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Write | AccessPermissions.List, DefaultAccessPolicyDuration).ConfigureAwait(false);
 
             EventHandler<UploadProgressChangedEventArgs> uploadProgressChangedHandler =
                 (s, e) =>
@@ -145,9 +145,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                     }
                 };
 
-            await asset.CreateAssetFileFromLocalFileAsync(filePath, sasLocator, uploadProgressChangedHandler, cancellationToken);
+            await asset.CreateAssetFileFromLocalFileAsync(filePath, sasLocator, uploadProgressChangedHandler, cancellationToken).ConfigureAwait(false);
 
-            await sasLocator.DeleteAsync();
+            await sasLocator.DeleteAsync().ConfigureAwait(false);
 
             return asset;
         }
@@ -324,9 +324,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             }
 
             string assetName = Path.GetFileName(Path.GetFullPath(folderPath.TrimEnd('\\')));
-            IAsset asset = await context.Assets.CreateAsync(assetName, storageAccountName, options, cancellationToken);
+            IAsset asset = await context.Assets.CreateAsync(assetName, storageAccountName, options, cancellationToken).ConfigureAwait(false);
 
-            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Write | AccessPermissions.List, DefaultAccessPolicyDuration);
+            ILocator sasLocator = await context.Locators.CreateAsync(LocatorType.Sas, asset, AccessPermissions.Write | AccessPermissions.List, DefaultAccessPolicyDuration).ConfigureAwait(false);
 
             EventHandler<UploadProgressChangedEventArgs> uploadProgressChangedHandler =
                 (s, e) =>
@@ -346,9 +346,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 uploadTasks.Add(asset.CreateAssetFileFromLocalFileAsync(filePath, sasLocator, uploadProgressChangedHandler, cancellationToken));
             }
 
-            await Task.Factory.ContinueWhenAll(uploadTasks.ToArray(), t => t, TaskContinuationOptions.ExecuteSynchronously);
+            await Task.Factory.ContinueWhenAll(uploadTasks.ToArray(), t => t, TaskContinuationOptions.ExecuteSynchronously).ConfigureAwait(false);
 
-            await sasLocator.DeleteAsync();
+            await sasLocator.DeleteAsync().ConfigureAwait(false);
 
             return asset;
         }

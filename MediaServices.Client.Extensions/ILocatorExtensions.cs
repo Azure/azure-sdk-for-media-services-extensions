@@ -34,6 +34,11 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public const string HlsStreamingParameter = "(format=m3u8-aapl)";
 
         /// <summary>
+        /// Represents the URL dynamic packaging parameter for HLS.
+        /// </summary>
+        public const string Hlsv3StreamingParameter = "(format=m3u8-aapl-v3)";
+
+        /// <summary>
         /// Represents the URL dynamic packaging parameter for MPEG-DASH.
         /// </summary>
         public const string MpegDashStreamingParameter = "(format=mpd-time-csf)";
@@ -51,13 +56,23 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         }
 
         /// <summary>
-        /// Returns the HLS URL of the <paramref name="originLocator"/>; otherwise, null.
+        /// Returns the HLS version 4 URL of the <paramref name="originLocator"/>; otherwise, null.
         /// </summary>
         /// <param name="originLocator">The <see cref="ILocator"/> instance.</param>
-        /// <returns>A <see cref="System.Uri"/> representing the HLS URL of the <paramref name="originLocator"/>; otherwise, null.</returns>
+        /// <returns>A <see cref="System.Uri"/> representing the HLS version 4 URL of the <paramref name="originLocator"/>; otherwise, null.</returns>
         public static Uri GetHlsUri(this ILocator originLocator)
         {
             return originLocator.GetStreamingUri(HlsStreamingParameter);
+        }
+
+        /// <summary>
+        /// Returns the HLS version 3 URL of the <paramref name="originLocator"/>; otherwise, null.
+        /// </summary>
+        /// <param name="originLocator">The <see cref="ILocator"/> instance.</param>
+        /// <returns>A <see cref="System.Uri"/> representing the HLS version 3 URL of the <paramref name="originLocator"/>; otherwise, null.</returns>
+        public static Uri GetHlsv3Uri(this ILocator originLocator)
+        {
+            return originLocator.GetStreamingUri(Hlsv3StreamingParameter);
         }
 
         /// <summary>

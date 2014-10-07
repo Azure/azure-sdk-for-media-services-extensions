@@ -47,9 +47,9 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 
             MediaContextBase context = locators.MediaContext;
 
-            var policy = await context.AccessPolicies.CreateAsync(asset.Name, duration, permissions);
+            var policy = await context.AccessPolicies.CreateAsync(asset.Name, duration, permissions).ConfigureAwait(false);
 
-            return await locators.CreateLocatorAsync(locatorType, asset, policy, startTime);
+            return await locators.CreateLocatorAsync(locatorType, asset, policy, startTime).ConfigureAwait(false);
         }
 
         /// <summary>

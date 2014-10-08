@@ -33,7 +33,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <summary>
         /// File name suffix with extension which represents metadata about output of encoder
         /// </summary>
-        public const string OutputMetadataFileSuffix = "_manifest.xml";
+        public const string MetadataFileSuffix = "_manifest.xml";
 
         /// <summary>
         /// File name suffix with extension which represents metadata about input of encoder
@@ -111,7 +111,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             IAssetFile metadataAssetFile = asset
                 .AssetFiles
                 .ToArray()
-                .FirstOrDefault(af => af.Name.EndsWith(OutputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(af => af.Name.EndsWith(MetadataFileSuffix, StringComparison.OrdinalIgnoreCase));
 
             if (metadataAssetFile != null)
             {

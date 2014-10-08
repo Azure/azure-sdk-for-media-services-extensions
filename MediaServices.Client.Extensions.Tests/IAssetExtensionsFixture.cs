@@ -180,7 +180,7 @@ namespace MediaServices.Client.Extensions.Tests
                 .ToArray()
                 .Where(
                 af =>
-                    !af.Name.EndsWith(IAssetExtensions.OutputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
+                    !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(IAssetExtensions.InputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     )
@@ -262,7 +262,7 @@ namespace MediaServices.Client.Extensions.Tests
                 .ToArray()
                 .Where(
                 af => 
-                    !af.Name.EndsWith(IAssetExtensions.OutputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase) 
+                    !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase) 
                     && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(IAssetExtensions.InputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     )

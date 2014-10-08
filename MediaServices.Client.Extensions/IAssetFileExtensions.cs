@@ -60,7 +60,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 
             AssetFileMetadata assetFileMetadata = null;
 
-            if (!assetFile.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase))
+            if (!assetFile.Name.EndsWith(IAssetExtensions.OutputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase))
             {
                 IAsset asset = assetFile.Asset;
 

@@ -31,9 +31,14 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     public static class IAssetExtensions
     {
         /// <summary>
-        /// Represents the metadata asset file name suffix with extension.
+        /// File name suffix with extension which represents metadata about output of encoder
         /// </summary>
-        public const string MetadataFileSuffix = "_manifest.xml";
+        public const string OutputMetadataFileSuffix = "_manifest.xml";
+
+        /// <summary>
+        /// File name suffix with extension which represents metadata about input of encoder
+        /// </summary>
+        public const string InputMetadataFileSuffix = "_metadata.xml";
 
         /// <summary>
         /// Returns a <see cref="System.Threading.Tasks.Task"/> instance to generate <see cref="IAssetFile"/> for the <paramref name="asset"/>.
@@ -106,7 +111,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             IAssetFile metadataAssetFile = asset
                 .AssetFiles
                 .ToArray()
-                .FirstOrDefault(af => af.Name.EndsWith(MetadataFileSuffix, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(af => af.Name.EndsWith(OutputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase));
 
             if (metadataAssetFile != null)
             {

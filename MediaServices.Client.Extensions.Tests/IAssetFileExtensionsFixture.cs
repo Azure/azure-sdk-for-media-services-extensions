@@ -149,7 +149,7 @@ namespace MediaServices.Client.Extensions.Tests
             this.asset = this.context.Assets.CreateFromFile(source, AssetCreationOptions.None);
 
             var job = this.context.Jobs.CreateWithSingleTask(
-                MediaProcessorNames.WindowsAzureMediaEncoder,
+                MediaProcessorNames.AzureMediaEncoder,
                 MediaEncoderTaskPresetStrings.H264AdaptiveBitrateMP4Set720p,
                 this.asset,
                 "Output Asset Name",

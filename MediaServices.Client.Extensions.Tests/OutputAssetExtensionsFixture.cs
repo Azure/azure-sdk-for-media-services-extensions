@@ -27,7 +27,7 @@ namespace MediaServices.Client.Extensions.Tests
     [TestClass]
     public class OutputAssetExtensionsFixture
     {
-        public readonly string Encoder = "Windows Azure Media Encoder";
+        
         public readonly string Preset = "H264 Broadband SD 4x3";
         private readonly string smallWmv = @"Media\smallwmv1.wmv";
         private CloudMediaContext context;
@@ -78,7 +78,7 @@ namespace MediaServices.Client.Extensions.Tests
             file.Upload(inputAssetFilePath);
 
             IJob job = context.Jobs.Create("Job to test using an account selection strategy for an output asset");
-            ITask task = job.Tasks.AddNew("Task to test using an account selection strategy for an output asset", GetMediaProcessor(Encoder), Preset, TaskOptions.None);
+            ITask task = job.Tasks.AddNew("Task to test using an account selection strategy for an output asset", GetMediaProcessor(MediaProcessorNames.AzureMediaEncoder), Preset, TaskOptions.None);
             task.InputAssets.Add(inputAsset);
             task.OutputAssets.AddNew("OutputAsset", strategy, AssetCreationOptions.None);
 

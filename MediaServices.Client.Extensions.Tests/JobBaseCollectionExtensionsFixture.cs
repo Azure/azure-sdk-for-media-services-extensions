@@ -31,7 +31,7 @@ namespace MediaServices.Client.Extensions.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public void ShouldThrowCreateWithSingleTaskIfJobCollectiontIsNull()
         {
-            var mediaProcessorName = MediaProcessorNames.WindowsAzureMediaEncoder;
+            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
             var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
@@ -45,7 +45,7 @@ namespace MediaServices.Client.Extensions.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public void ShouldThrowCreateWithSingleTaskIfInputAssetIsNull()
         {
-            var mediaProcessorName = MediaProcessorNames.WindowsAzureMediaEncoder;
+            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
             var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
@@ -58,7 +58,7 @@ namespace MediaServices.Client.Extensions.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public void ShouldThrowCreateWithSingleTaskIfStrategyIsNull()
         {
-            var mediaProcessorName = MediaProcessorNames.WindowsAzureMediaEncoder;
+            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
             var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
@@ -86,7 +86,7 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv")]
         public void ShouldCreateWithSingleTask()
         {
-            var mediaProcessorName = MediaProcessorNames.WindowsAzureMediaEncoder;
+            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
             var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;

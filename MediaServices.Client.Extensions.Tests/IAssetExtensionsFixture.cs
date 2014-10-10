@@ -160,7 +160,7 @@ namespace MediaServices.Client.Extensions.Tests
             this.asset = this.context.Assets.CreateFromFile(source, AssetCreationOptions.None);
 
             var job = this.context.Jobs.CreateWithSingleTask(
-                MediaProcessorNames.WindowsAzureMediaEncoder,
+                MediaProcessorNames.AzureMediaEncoder,
                 MediaEncoderTaskPresetStrings.H264AdaptiveBitrateMP4Set720p,
                 this.asset,
                 "Output Asset Name",
@@ -178,9 +178,15 @@ namespace MediaServices.Client.Extensions.Tests
             var assetFilesArray = this.outputAsset
                 .AssetFiles
                 .ToArray()
-                .Where(af => !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase) && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase))
+                .Where(
+                af =>
+                    !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
+                    && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase)
+                    && !af.Name.EndsWith(IAssetExtensions.InputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
+                    )
                 .OrderBy(af => af.Name)
                 .ToArray();
+
             var assetMetadataArray = assetMetadata.OrderBy(am => am.Name).ToArray();
 
             Assert.AreEqual(assetFilesArray.Length, assetMetadataArray.Length);
@@ -236,7 +242,7 @@ namespace MediaServices.Client.Extensions.Tests
             this.asset = this.context.Assets.CreateFromFile(source, AssetCreationOptions.None);
 
             var job = this.context.Jobs.CreateWithSingleTask(
-                MediaProcessorNames.WindowsAzureMediaEncoder,
+                MediaProcessorNames.AzureMediaEncoder,
                 MediaEncoderTaskPresetStrings.H264AdaptiveBitrateMP4Set720p,
                 this.asset,
                 "Output Asset Name",
@@ -254,7 +260,12 @@ namespace MediaServices.Client.Extensions.Tests
             var assetFilesArray = this.outputAsset
                 .AssetFiles
                 .ToArray()
-                .Where(af => !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase) && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase))
+                .Where(
+                af => 
+                    !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase) 
+                    && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase)
+                    && !af.Name.EndsWith(IAssetExtensions.InputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
+                    )
                 .OrderBy(af => af.Name)
                 .ToArray();
             var assetMetadataArray = assetMetadata.OrderBy(am => am.Name).ToArray();

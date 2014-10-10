@@ -21,9 +21,14 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     public static class MediaProcessorNames
     {
         /// <summary>
-        /// Lets you run encoding tasks using the Media Encoder.
+        /// Lets you run encoding tasks using the proccessor 'Windows Azure Media Encoder'.
         /// </summary>
         public const string WindowsAzureMediaEncoder = "Windows Azure Media Encoder";
+
+        /// <summary>
+        ///  Lets you run encoding tasks using the proccessor 'Azure Media Encoder'.
+        /// </summary>
+        public const string AzureMediaEncoder = "Azure Media Encoder";
 
         /// <summary>
         /// Lets you convert media assets from MP4 to Smooth Streaming format. Also, lets you convert media assets 

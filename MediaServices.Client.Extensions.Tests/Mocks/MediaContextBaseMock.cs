@@ -19,9 +19,6 @@ using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
 namespace MediaServices.Client.Extensions.Tests.Mocks
 {
     using System;
-    using System.Collections.ObjectModel;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Microsoft.WindowsAzure.MediaServices.Client;
 
     public class MediaContextBaseMock : MediaContextBase
@@ -49,6 +46,12 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
         public override AccessPolicyBaseCollection AccessPolicies { get { throw new NotImplementedException(); } }
         public override AssetBaseCollection Assets { get { throw new NotImplementedException(); } }
         public override ContentKeyBaseCollection ContentKeys { get { throw new NotImplementedException(); } }
+
+        public override EncodingReservedUnitCollection EncodingReservedUnits
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public override IStorageAccount DefaultStorageAccount { get { throw new NotImplementedException(); } }
         public override AssetFileBaseCollection Files { get { throw new NotImplementedException(); } }
         public override IngestManifestAssetCollection IngestManifestAssets { get { throw new NotImplementedException(); } }

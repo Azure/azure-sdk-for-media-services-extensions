@@ -69,6 +69,6 @@ echo FAILED. Unable to publish to myget
 exit /b -1
 
 :signfailed
-
+del /q c:\signing\tosign\*.*
 echo FAILED. Signing tool failed.
 exit /b -1

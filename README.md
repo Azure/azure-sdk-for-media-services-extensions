@@ -65,7 +65,7 @@ Copies the all files in the source asset into the destination asset using a sing
 This extension method works with:
 * Regular assets
 * Live archive assets (FragBlob format)
-* Source and destination assets can belong to different Media Services accounts (even across different datacenters)
+* Source and destination assets belonging to different Media Services accounts (even across different datacenters)
 
 ```csharphttps://github.com/mconverti/azure-sdk-for-media-services-extensions-1/edit/dev/README.md#
 CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");

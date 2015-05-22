@@ -30,12 +30,12 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     public static class IAssetFileExtensions
     {
         /// <summary>
-        /// Returns a <see cref="System.Threading.Tasks.Task&lt;AssetFileMetadata&gt;"/> instance to retreive the <paramref name="assetFile"/> metadata.
+        /// Returns a <see cref="System.Threading.Tasks.Task&lt;AssetFileMetadata&gt;"/> instance to retrieve the <paramref name="assetFile"/> metadata.
         /// </summary>
         /// <param name="assetFile">The <see cref="IAssetFile"/> instance from where to get the metadata.</param>
         /// <param name="sasLocator">The <see cref="ILocator"/> instance.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;AssetFileMetadata&gt;"/> instance to retreive the <paramref name="assetFile"/> metadata.</returns>
+        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;AssetFileMetadata&gt;"/> instance to retrieve the <paramref name="assetFile"/> metadata.</returns>
         public static async Task<AssetFileMetadata> GetMetadataAsync(this IAssetFile assetFile, ILocator sasLocator, CancellationToken cancellationToken)
         {
             if (assetFile == null)

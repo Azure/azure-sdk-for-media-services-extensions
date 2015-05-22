@@ -23,6 +23,7 @@ namespace MediaServices.Client.Extensions.Tests
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
+    using Microsoft.WindowsAzure.Storage.Auth;
     using Microsoft.WindowsAzure.Storage.Blob;
 
     [TestClass]
@@ -261,8 +262,8 @@ namespace MediaServices.Client.Extensions.Tests
                 .AssetFiles
                 .ToArray()
                 .Where(
-                af => 
-                    !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase) 
+                af =>
+                    !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(IAssetExtensions.InputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     )
@@ -621,6 +622,258 @@ namespace MediaServices.Client.Extensions.Tests
 
             Assert.IsNotNull(mediaContext);
             Assert.AreSame(this.context, mediaContext);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCopyIfAssetIsNull()
+        {
+            this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
+            IAsset nullAsset = null;
+            var storageCredentials = TestHelper.CreateStorageCredentials();
+
+            try
+            {
+                nullAsset.Copy(this.asset, storageCredentials);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCopyIfDestinationAssetIsNull()
+        {
+            this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
+            IAsset nullAsset = null;
+            var storageCredentials = TestHelper.CreateStorageCredentials();
+
+            try
+            {
+                this.asset.Copy(nullAsset, storageCredentials);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCopyIfStorageCredentialsIsNull()
+        {
+            this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
+            this.outputAsset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            StorageCredentials nullStorageCredentials = null;
+
+            try
+            {
+                this.asset.Copy(this.outputAsset, nullStorageCredentials);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCopyIfStorageCredentialsIsAnonymous()
+        {
+            this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
+            this.outputAsset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            StorageCredentials storageCredentials = new StorageCredentials();
+
+            try
+            {
+                this.asset.Copy(this.outputAsset, storageCredentials);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCopyIfStorageCredentialsIsSAS()
+        {
+            this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
+            this.outputAsset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            StorageCredentials storageCredentials = new StorageCredentials("?se=2015-05-22T19%3A46%3A16Z&sr=c&si=efa38601-1f8e-4e3a-9a85-2485e2a4f374&sv=2012-02-12&sig=CwUScO98yTHKNRdzwJNRIB7BhRHc9fg4ng1Bb0KE0vo%3D");
+
+            try
+            {
+                this.asset.Copy(this.outputAsset, storageCredentials);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCopyIfStorageCredentialsDoesNotBelongToDestinationAssetStorageAccount()
+        {
+            this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
+            this.outputAsset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            StorageCredentials storageCredentials = new StorageCredentials("anotherstorageaccountname", "2d3mDy7UXbW47f4qZAXu+jNd/ZEQifENiz74G/kcfr4rKUIIWcOUtqwvE4Bb7bporT1L4Q7V/lZXdiHDZyVnIw==");
+
+            try
+            {
+                this.asset.Copy(this.outputAsset, storageCredentials);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        public void ShouldCopyIfAssetIsEmpty()
+        {
+            this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
+            this.outputAsset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            var storageCredentials = TestHelper.CreateStorageCredentials();
+
+            this.asset.Copy(this.outputAsset, storageCredentials);
+
+            Assert.AreEqual(0, this.asset.AssetFiles.Count());
+            Assert.AreEqual(0, this.outputAsset.AssetFiles.Count());
+
+            Assert.AreEqual(0, this.asset.Locators.Count());
+            Assert.AreEqual(0, this.outputAsset.Locators.Count());
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
+        [DeploymentItem(@"Media\smallwmv2.wmv", "Media")]
+        [DeploymentItem(@"Media\dummy.ism", "Media")]
+        public void ShouldCopyAsset()
+        {
+            var folderName = "Media";
+            this.asset = this.context.Assets.CreateFromFolder(folderName, AssetCreationOptions.None);
+            this.outputAsset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            var storageCredentials = TestHelper.CreateStorageCredentials();
+
+            // Workaround for SAS locator creation delay
+            Thread.Sleep(20000);
+
+            this.asset.Copy(this.outputAsset, storageCredentials);
+
+            var sourceAssetFiles = this.asset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            var destinationAssetFiles = this.outputAsset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            Assert.AreEqual(sourceAssetFiles.Length, destinationAssetFiles.Length);
+
+            for (int i = 0; i < sourceAssetFiles.Length; i++)
+            {
+                var sourceAssetFile = sourceAssetFiles[i];
+                var destinationAssetFile = destinationAssetFiles[i];
+
+                Assert.AreEqual(destinationAssetFile.Name, destinationAssetFile.Name);
+                Assert.AreEqual(destinationAssetFile.ContentFileSize, destinationAssetFile.ContentFileSize);
+                Assert.AreEqual(destinationAssetFile.MimeType, destinationAssetFile.MimeType);
+                Assert.AreEqual(destinationAssetFile.IsPrimary, destinationAssetFile.IsPrimary);
+            }
+
+            Assert.AreEqual(0, this.asset.Locators.Count());
+            Assert.AreEqual(0, this.outputAsset.Locators.Count());
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
+        [DeploymentItem(@"Media\smallwmv2.wmv", "Media")]
+        [DeploymentItem(@"Media\dummy.ism", "Media")]
+        public void ShouldCopyAssetTwice()
+        {
+            var folderName = "Media";
+            this.asset = this.context.Assets.CreateFromFolder(folderName, AssetCreationOptions.None);
+            this.outputAsset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            var storageCredentials = TestHelper.CreateStorageCredentials();
+
+            // Workaround for SAS locator creation delay
+            Thread.Sleep(20000);
+
+            // Copy to an empty asset
+            this.asset.Copy(this.outputAsset, storageCredentials);
+
+            var sourceAssetFiles = this.asset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            var destinationAssetFiles = this.outputAsset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            Assert.AreEqual(sourceAssetFiles.Length, destinationAssetFiles.Length);
+
+            for (int i = 0; i < sourceAssetFiles.Length; i++)
+            {
+                var sourceAssetFile = sourceAssetFiles[i];
+                var destinationAssetFile = destinationAssetFiles[i];
+
+                Assert.AreEqual(destinationAssetFile.Name, destinationAssetFile.Name);
+                Assert.AreEqual(destinationAssetFile.ContentFileSize, destinationAssetFile.ContentFileSize);
+                Assert.AreEqual(destinationAssetFile.MimeType, destinationAssetFile.MimeType);
+                Assert.AreEqual(destinationAssetFile.IsPrimary, destinationAssetFile.IsPrimary);
+            }
+
+            Assert.AreEqual(0, this.asset.Locators.Count());
+            Assert.AreEqual(0, this.outputAsset.Locators.Count());
+
+            // Workaround for SAS locator creation delay
+            Thread.Sleep(25000);
+
+            // Copy to an asset with existing content
+            this.asset.Copy(this.outputAsset, storageCredentials);
+
+            sourceAssetFiles = this.asset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            destinationAssetFiles = this.outputAsset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            Assert.AreEqual(sourceAssetFiles.Length, destinationAssetFiles.Length);
+
+            for (int i = 0; i < sourceAssetFiles.Length; i++)
+            {
+                var sourceAssetFile = sourceAssetFiles[i];
+                var destinationAssetFile = destinationAssetFiles[i];
+
+                Assert.AreEqual(destinationAssetFile.Name, destinationAssetFile.Name);
+                Assert.AreEqual(destinationAssetFile.ContentFileSize, destinationAssetFile.ContentFileSize);
+                Assert.AreEqual(destinationAssetFile.MimeType, destinationAssetFile.MimeType);
+                Assert.AreEqual(destinationAssetFile.IsPrimary, destinationAssetFile.IsPrimary);
+            }
+
+            Assert.AreEqual(0, this.asset.Locators.Count());
+            Assert.AreEqual(0, this.outputAsset.Locators.Count());
+        }
+
+        [TestMethod]
+        public void ShouldCopyFragBlobAsset()
+        {
+            var fragBlobAsset = this.context.Assets.Where(a => a.Id == TestHelper.FragBlobAssetId).First();
+            this.asset = this.context.Assets.Create("copy", AssetCreationOptions.None);
+            var storageCredentials = TestHelper.CreateStorageCredentials();
+
+            fragBlobAsset.Copy(this.asset, storageCredentials);
+
+            var sourceAssetFiles = fragBlobAsset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            var destinationAssetFiles = this.asset.AssetFiles.ToArray().OrderBy(af => af.Name).ToArray();
+            Assert.AreEqual(sourceAssetFiles.Length, destinationAssetFiles.Length);
+
+            for (int i = 0; i < sourceAssetFiles.Length; i++)
+            {
+                var sourceAssetFile = sourceAssetFiles[i];
+                var destinationAssetFile = destinationAssetFiles[i];
+
+                Assert.AreEqual(destinationAssetFile.Name, destinationAssetFile.Name);
+                Assert.AreEqual(destinationAssetFile.ContentFileSize, destinationAssetFile.ContentFileSize);
+                Assert.AreEqual(destinationAssetFile.MimeType, destinationAssetFile.MimeType);
+                Assert.AreEqual(destinationAssetFile.IsPrimary, destinationAssetFile.IsPrimary);
+            }
+
+            Assert.AreEqual(0, this.asset.Locators.Count());
         }
 
         [TestInitialize]

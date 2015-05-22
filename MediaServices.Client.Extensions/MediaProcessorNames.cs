@@ -31,6 +31,21 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public const string AzureMediaEncoder = "Azure Media Encoder";
 
         /// <summary>
+        ///  Lets you run encoding tasks using the proccessor 'Azure Media Indexer'.
+        /// </summary>
+        public const string AzureMediaIndexer = "Azure Media Indexer";
+
+        /// <summary>
+        ///  Lets you run encoding tasks using the proccessor 'Azure Media Hyperlapse'.
+        /// </summary>
+        public const string AzureMediaHyperlapse = "Azure Media Hyperlapse";
+
+        /// <summary>
+        ///  Lets you run encoding tasks using the proccessor 'Media Encoder Premium Workflow'.
+        /// </summary>
+        public const string MediaEncoderPremiumWorkflow = "Media Encoder Premium Workflow";
+
+        /// <summary>
         /// Lets you convert media assets from MP4 to Smooth Streaming format. Also, lets you convert media assets 
         /// from Smooth Streaming to the Apple HTTP Live Streaming (HLS) format.
         /// </summary>

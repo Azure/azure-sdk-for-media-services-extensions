@@ -60,12 +60,12 @@ IAsset asset = context.Assets.CreateFromFolder(folderPath, assetCreationOptions)
 ```
 
 ### Copy an Asset
-Copies the all files in the source asset into the destination asset using a single extension method for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface. The source and destination assets can belong to different Media Services accounts. There is an additional overload with _async_ support.
+Copies the all files in the source asset into the destination asset using a single extension method for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface. There is an additional overload with _async_ support.
 
 This extension method works with:
 * Regular assets
 * Live archive assets (FragBlob format)
-* Source and destination assets in different Media Services account (even across  different datacenters)
+* Source and destination assets can belong to different Media Services accounts (even across different datacenters)
 
 ```csharphttps://github.com/mconverti/azure-sdk-for-media-services-extensions-1/edit/dev/README.md#
 CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");

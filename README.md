@@ -2,7 +2,7 @@ Windows Azure Media Services .NET SDK Extensions
 ================================================
 
 ## What is it?
-A NuGet package that contains a set of extension methods and helpers for the Windows Azure Media Services SDK for .NET.
+A NuGet package that contains a set of extension methods and helpers for the [Windows Azure Media Services .NET SDK](https://github.com/mconverti/azure-sdk-for-media-services).
 
 ## Usage
 Install the [WindowsAzure.MediaServices.Extensions](https://www.nuget.org/packages/WindowsAzure.MediaServices.Extensions) Nuget package by running `Install-Package WindowsAzure.MediaServices.Extensions` in the [Package Manager Console](http://docs.nuget.org/docs/start-here/using-the-package-manager-console/).
@@ -57,6 +57,29 @@ AssetCreationOptions assetCreationOptions = AssetCreationOptions.None;
 
 // Create a new asset and upload all the files in a local folder using a single extension method.
 IAsset asset = context.Assets.CreateFromFolder(folderPath, assetCreationOptions);
+```
+
+### Copy an Asset
+Copies the all files in the source asset into the destination asset using a single extension method for the [IAsset](http://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset.aspx) interface. There is an additional overload with _async_ support.
+
+This extension method works with:
+* Regular assets
+* Live archive assets (FragBlob format)
+* Source and destination assets belonging to different Media Services accounts (even across different datacenters)
+
+```csharphttps://github.com/mconverti/azure-sdk-for-media-services-extensions-1/edit/dev/README.md#
+CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+
+// Get a reference to the source asset.
+string sourceAssetId = "%sourceAssetId%";
+IAsset sourceAsset = context.Assets.Where(a => a.Id == sourceAssetId).First();
+
+// Create an empty destination asset where the source asset files are going to be copied.
+IAsset destinationAsset = context.Assets.Create("Asset Copy", AssetCreationOptions.None);
+StorageCredentials destinationStorageCredentials = new StorageCredentials("%storageAccountName%", "%storageAccountKey%");
+
+// Copy the files in the 'sourceAsset' instance into the 'destinationAsset' instance.
+sourceAsset.Copy(destinationAsset, destinationStorageCredentials);
 ```
 
 ### Generate Asset Files from Blob storage
@@ -254,10 +277,16 @@ Get the latest version of a media processor filtering by its name using a single
 CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
 
 // The media processor name.
-string mediaProcessorName = MediaProcessorNames.WindowsAzureMediaEncoder;
+string azureMediaEncoderProcessorName = MediaProcessorNames.AzureMediaEncoder;
+string azureMediaIndexerProcessorName = MediaProcessorNames.AzureMediaIndexer;
+string azureMediaHyperlapseProcessorName = MediaProcessorNames.AzureMediaHyperlapse;
+string mediaEncoderPremiumWorkflowProcessorName = MediaProcessorNames.MediaEncoderPremiumWorkflow;
 
 // Get the latest version of a media processor by its name using a single extension method.
-IMediaProcessor processor = context.MediaProcessors.GetLatestMediaProcessorByName(mediaProcessorName);
+IMediaProcessor azureMediaEncoderProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(azureMediaEncoderProcessorName);
+IMediaProcessor azureMediaIndexerProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(azureMediaIndexerProcessorName);
+IMediaProcessor azureMediaHyperlapseProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(azureMediaHyperlapseProcessorName);
+IMediaProcessor mediaEncoderPremiumWorkflowProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(mediaEncoderPremiumWorkflowProcessorName);
 ```
 
 ### Create a Job with a single Task

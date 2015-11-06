@@ -1,4 +1,3 @@
-﻿
 ﻿// <copyright file="TestHelper.cs" company="Microsoft">Copyright 2013 Microsoft Corporation</copyright>
 // <license>
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +15,21 @@
 
 namespace MediaServices.Client.Extensions.Tests
 {
-    
-﻿using System;
+    using System;
     using System.Configuration;
-    using Microsoft.WindowsAzure.MediaServices.Client;
+    ﻿using Microsoft.WindowsAzure.MediaServices.Client;
+    using Microsoft.WindowsAzure.Storage.Auth;
 
     public class TestHelper
     {
+        public static string FragBlobAssetId
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["MediaServiceFragBlobAssetId"];
+            }
+        }
+
         public static CloudMediaContext CreateContext()
         {
             return new CloudMediaContext(
@@ -30,8 +37,14 @@ namespace MediaServices.Client.Extensions.Tests
                 ConfigurationManager.AppSettings["MediaServiceAccountName"],
                 ConfigurationManager.AppSettings["MediaServiceAccountKey"],
                 ConfigurationManager.AppSettings["MediaServicesAccessScope"],
-                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]
-                );
+                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]);
+        }
+
+        public static StorageCredentials CreateStorageCredentials()
+        {
+            return new StorageCredentials(
+                ConfigurationManager.AppSettings["MediaServiceStorageAccountName"],
+                ConfigurationManager.AppSettings["MediaServiceStorageAccountKey"]);
         }
     }
 }

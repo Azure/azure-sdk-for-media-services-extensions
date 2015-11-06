@@ -24,6 +24,10 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     using System.Threading.Tasks;
     using Microsoft.WindowsAzure.MediaServices.Client.Metadata;
     using Microsoft.WindowsAzure.MediaServices.Client.TransientFaultHandling;
+    using Microsoft.WindowsAzure.Storage;
+    using Microsoft.WindowsAzure.Storage.Auth;
+    using Microsoft.WindowsAzure.Storage.Blob;
+    using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
     /// <summary>
     /// Contains extension methods and helpers for the <see cref="IAsset"/> interface.
@@ -31,14 +35,16 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     public static class IAssetExtensions
     {
         /// <summary>
-        /// File name suffix with extension which represents metadata about output of encoder
+        /// File name suffix with extension which represents metadata about output of encoder.
         /// </summary>
         public const string MetadataFileSuffix = "_manifest.xml";
 
         /// <summary>
-        /// File name suffix with extension which represents metadata about input of encoder
+        /// File name suffix with extension which represents metadata about input of encoder.
         /// </summary>
         public const string InputMetadataFileSuffix = "_metadata.xml";
+
+        private const int MaxNumberOfConcurrentCopyFromBlobOperations = 750;
 
         /// <summary>
         /// Returns a <see cref="System.Threading.Tasks.Task"/> instance to generate <see cref="IAssetFile"/> for the <paramref name="asset"/>.
@@ -78,12 +84,12 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         }
 
         /// <summary>
-        /// Returns a <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retreive the <paramref name="asset"/> metadata.
+        /// Returns a <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retrieve the <paramref name="asset"/> metadata.
         /// </summary>
         /// <param name="asset">The <see cref="IAsset"/> instance from where to get the metadata.</param>
         /// <param name="sasLocator">The <see cref="ILocator"/> instance.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retreive the <paramref name="asset"/> metadata.</returns>
+        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retrieve the <paramref name="asset"/> metadata.</returns>
         public static async Task<IEnumerable<AssetFileMetadata>> GetMetadataAsync(this IAsset asset, ILocator sasLocator, CancellationToken cancellationToken)
         {
             if (asset == null)
@@ -130,11 +136,11 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         }
 
         /// <summary>
-        /// Returns a <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retreive the <paramref name="asset"/> metadata.
+        /// Returns a <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retrieve the <paramref name="asset"/> metadata.
         /// </summary>
         /// <param name="asset">The <see cref="IAsset"/> instance from where to get the metadata.</param>
         /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
-        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retreive the <paramref name="asset"/> metadata.</returns>
+        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;AssetFileMetadata&gt;&gt;"/> instance to retrieve the <paramref name="asset"/> metadata.</returns>
         public static async Task<IEnumerable<AssetFileMetadata>> GetMetadataAsync(this IAsset asset, CancellationToken cancellationToken)
         {
             if (asset == null)
@@ -338,6 +344,82 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         }
 
         /// <summary>
+        /// Copies the files in the <paramref name="sourceAsset"/> into into the <paramref name="destinationAsset"/> instance.
+        /// </summary>
+        /// <param name="sourceAsset">The <see cref="IAsset"/> instance that contains the asset files to copy.</param>
+        /// <param name="destinationAsset">The <see cref="IAsset"/> instance that receives asset files.</param>
+        /// <param name="destinationStorageCredentials">The <see cref="Microsoft.WindowsAzure.Storage.Auth.StorageCredentials"/> instance for the <paramref name="destinationAsset"/> Storage Account.</param>
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task"/> instance to copy the files in the <paramref name="sourceAsset"/> into into the <paramref name="destinationAsset"/> instance.</returns>
+        public static async Task CopyAsync(this IAsset sourceAsset, IAsset destinationAsset, StorageCredentials destinationStorageCredentials, CancellationToken cancellationToken)
+        {
+            if (sourceAsset == null)
+            {
+                throw new ArgumentNullException("sourceAsset", "The source asset cannot be null.");
+            }
+
+            if (destinationAsset == null)
+            {
+                throw new ArgumentNullException("destinationAsset", "The destination asset cannot be null.");
+            }
+
+            if (destinationStorageCredentials == null)
+            {
+                throw new ArgumentNullException("destinationStorageCredentials", "The destination storage credentials cannot be null.");
+            }
+
+            if (destinationStorageCredentials.IsAnonymous || destinationStorageCredentials.IsSAS)
+            {
+                throw new ArgumentException("The destination storage credentials must contain the account key credentials.", "destinationStorageCredentials");
+            }
+
+            if (!string.IsNullOrWhiteSpace(destinationStorageCredentials.AccountName) && !destinationStorageCredentials.AccountName.Equals(destinationAsset.StorageAccountName, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("The destination storage credentials does not belong to the destination asset storage account.", "destinationStorageCredentials");
+            }
+
+            MediaContextBase sourceContext = sourceAsset.GetMediaContext();
+            ILocator sourceLocator = null;
+
+            try
+            {
+                sourceLocator = await sourceContext.Locators.CreateAsync(LocatorType.Sas, sourceAsset, AccessPermissions.Read | AccessPermissions.List, AssetBaseCollectionExtensions.DefaultAccessPolicyDuration).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                IRetryPolicy retryPolicy = sourceContext.MediaServicesClassFactory.GetBlobStorageClientRetryPolicy().AsAzureStorageClientRetryPolicy();
+                BlobRequestOptions options = new BlobRequestOptions { RetryPolicy = retryPolicy };
+                CloudBlobContainer sourceContainer = new CloudBlobContainer(sourceAsset.Uri, new StorageCredentials(sourceLocator.ContentAccessComponent));
+                CloudBlobContainer destinationContainer = new CloudBlobContainer(destinationAsset.Uri, destinationStorageCredentials);
+
+                await CopyBlobsAsync(sourceContainer, destinationContainer, options, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await CopyAssetFilesAsync(sourceAsset, destinationAsset, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (sourceLocator != null)
+                {
+                    sourceLocator.Delete();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Copies the files in the <paramref name="sourceAsset"/> into into the <paramref name="destinationAsset"/> instance.
+        /// </summary>
+        /// <param name="sourceAsset">The <see cref="IAsset"/> instance that contains the asset files to copy.</param>
+        /// <param name="destinationAsset">The <see cref="IAsset"/> instance that receives asset files.</param>
+        /// <param name="destinationStorageCredentials">The <see cref="Microsoft.WindowsAzure.Storage.Auth.StorageCredentials"/> instance for the <paramref name="destinationAsset"/> Storage Account.</param>
+        public static void Copy(this IAsset sourceAsset, IAsset destinationAsset, StorageCredentials destinationStorageCredentials)
+        {
+            using (Task task = sourceAsset.CopyAsync(destinationAsset, destinationStorageCredentials, CancellationToken.None))
+            {
+                task.Wait();
+            }
+        }
+
+        /// <summary>
         /// Returns the parent <see cref="MediaContextBase"/> instance.
         /// </summary>
         /// <param name="asset">The <see cref="IAsset"/> instance.</param>
@@ -418,6 +500,80 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             }
 
             return smoothStreamingUri;
+        }
+
+        private static async Task CopyBlobsAsync(CloudBlobContainer sourceContainer, CloudBlobContainer destinationContainer, BlobRequestOptions options, CancellationToken cancellationToken)
+        {
+            BlobContinuationToken continuationToken = null;
+
+            do
+            {
+                BlobResultSegment resultSegment = await sourceContainer.ListBlobsSegmentedAsync(null, true, BlobListingDetails.None, MaxNumberOfConcurrentCopyFromBlobOperations, continuationToken, options, null, cancellationToken).ConfigureAwait(false);
+
+                IEnumerable<Task> copyTasks = resultSegment
+                    .Results
+                    .Cast<CloudBlockBlob>()
+                    .Select(
+                        sourceBlob =>
+                        {
+                            CloudBlockBlob destinationBlob = destinationContainer.GetBlockBlobReference(sourceBlob.Name);
+
+                            return CopyBlobAsync(destinationBlob, sourceBlob, options, cancellationToken);
+                        });
+
+                await Task.WhenAll(copyTasks).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                continuationToken = resultSegment.ContinuationToken;
+            }
+            while (continuationToken != null);
+        }
+
+        private static async Task CopyBlobAsync(CloudBlockBlob destinationBlob, CloudBlockBlob sourceBlob, BlobRequestOptions options, CancellationToken cancellationToken)
+        {
+            await destinationBlob.StartCopyFromBlobAsync(sourceBlob, null, null, options, null, cancellationToken).ConfigureAwait(false);
+
+            CopyState copyState = destinationBlob.CopyState;
+            while (copyState == null || copyState.Status == CopyStatus.Pending)
+            {
+                await destinationBlob.FetchAttributesAsync(null, options, null, cancellationToken).ConfigureAwait(false);
+
+                copyState = destinationBlob.CopyState;
+                if (copyState != null && copyState.Status != CopyStatus.Pending && copyState.Status != CopyStatus.Success)
+                {
+                    throw new StorageException(copyState.StatusDescription);
+                }
+            }
+        }
+
+        private static Task CopyAssetFilesAsync(IAsset sourceAsset, IAsset destinationAsset, CancellationToken cancellationToken)
+        {
+            IAssetFile[] sourceAssetFiles = sourceAsset.AssetFiles.ToArray();
+            IDictionary<string, IAssetFile> destinationAssetFiles = destinationAsset.AssetFiles.ToArray().ToDictionary(af => af.Name);
+            IList<Task> copyTasks = new List<Task>();
+
+            foreach (var sourceAssetFile in sourceAssetFiles)
+            {
+                if (!destinationAssetFiles.ContainsKey(sourceAssetFile.Name))
+                {
+                    copyTasks.Add(destinationAsset.AssetFiles.CreateCopyAsync(sourceAssetFile, cancellationToken));
+                }
+            }
+
+            return Task.WhenAll(copyTasks);
+        }
+
+        private static async Task<IAssetFile> CreateCopyAsync(this AssetFileBaseCollection assetFiles, IAssetFile assetFile, CancellationToken cancellationToken)
+        {
+            IAssetFile assetFileCopy = await assetFiles.CreateAsync(assetFile.Name, cancellationToken).ConfigureAwait(false);
+
+            assetFileCopy.IsPrimary = assetFile.IsPrimary;
+            assetFileCopy.ContentFileSize = assetFile.ContentFileSize;
+            assetFileCopy.MimeType = assetFile.MimeType;
+
+            await assetFileCopy.UpdateAsync().ConfigureAwait(false);
+
+            return assetFileCopy;
         }
     }
 }

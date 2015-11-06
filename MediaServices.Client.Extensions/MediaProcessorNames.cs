@@ -15,20 +15,43 @@
 
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
+    using System;
+
     /// <summary>
     /// Contains string constants with the available media processors' names.
     /// </summary>
     public static class MediaProcessorNames
     {
         /// <summary>
-        /// Lets you run encoding tasks using the proccessor 'Windows Azure Media Encoder'.
+        /// Lets you run encoding tasks using the processor 'Windows Azure Media Encoder'.
         /// </summary>
+        [Obsolete]
         public const string WindowsAzureMediaEncoder = "Windows Azure Media Encoder";
 
         /// <summary>
-        ///  Lets you run encoding tasks using the proccessor 'Azure Media Encoder'.
+        ///  Lets you run encoding tasks using the processor 'Azure Media Encoder'.
         /// </summary>
         public const string AzureMediaEncoder = "Azure Media Encoder";
+
+        /// <summary>
+        ///  Lets you run encoding tasks using the processor 'Azure Media Indexer'.
+        /// </summary>
+        public const string AzureMediaIndexer = "Azure Media Indexer";
+
+        /// <summary>
+        ///  Lets you run encoding tasks using the processor 'Azure Media Hyperlapse'.
+        /// </summary>
+        public const string AzureMediaHyperlapse = "Azure Media Hyperlapse";
+
+        /// <summary>
+        ///  Lets you run encoding tasks using the processor 'Media Encoder Standard'.
+        /// </summary>
+        public const string MediaEncoderStandard = "Media Encoder Standard";
+
+        /// <summary>
+        ///  Lets you run encoding tasks using the processor 'Media Encoder Premium Workflow'.
+        /// </summary>
+        public const string MediaEncoderPremiumWorkflow = "Media Encoder Premium Workflow";
 
         /// <summary>
         /// Lets you convert media assets from MP4 to Smooth Streaming format. Also, lets you convert media assets 

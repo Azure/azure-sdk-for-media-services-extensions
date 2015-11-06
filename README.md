@@ -280,12 +280,14 @@ CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%
 string azureMediaEncoderProcessorName = MediaProcessorNames.AzureMediaEncoder;
 string azureMediaIndexerProcessorName = MediaProcessorNames.AzureMediaIndexer;
 string azureMediaHyperlapseProcessorName = MediaProcessorNames.AzureMediaHyperlapse;
+string mediaEncoderStandardProcessorName = MediaProcessorNames.MediaEncoderStandard;
 string mediaEncoderPremiumWorkflowProcessorName = MediaProcessorNames.MediaEncoderPremiumWorkflow;
 
 // Get the latest version of a media processor by its name using a single extension method.
 IMediaProcessor azureMediaEncoderProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(azureMediaEncoderProcessorName);
 IMediaProcessor azureMediaIndexerProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(azureMediaIndexerProcessorName);
 IMediaProcessor azureMediaHyperlapseProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(azureMediaHyperlapseProcessorName);
+IMediaProcessor mediaEncoderStandardProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(mediaEncoderStandardProcessorName);
 IMediaProcessor mediaEncoderPremiumWorkflowProcessor = context.MediaProcessors.GetLatestMediaProcessorByName(mediaEncoderPremiumWorkflowProcessorName);
 ```
 

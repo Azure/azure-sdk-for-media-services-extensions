@@ -63,6 +63,6 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
         public override MediaProcessorBaseCollection MediaProcessors { get { throw new NotImplementedException(); } }
         public override NotificationEndPointCollection NotificationEndPoints { get { throw new NotImplementedException(); } }
         public override StorageAccountBaseCollection StorageAccounts { get { return _storageAccounts; } }
-
+        public override StreamingFilterBaseCollection Filters { get { throw new NotImplementedException(); } }
     }
 }

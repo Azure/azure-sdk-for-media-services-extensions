@@ -22,6 +22,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     /// </summary>
     public static class MediaProcessorNames
     {
+
         /// <summary>
         /// Lets you run encoding tasks using the processor 'Windows Azure Media Encoder'.
         /// </summary>
@@ -31,6 +32,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <summary>
         ///  Lets you run encoding tasks using the processor 'Azure Media Encoder'.
         /// </summary>
+        [Obsolete("The end of life date for Azure Media Encoder is March 1, 2017. It is now recommended to use Media Encoder Standard (MES).")]
         public const string AzureMediaEncoder = "Azure Media Encoder";
 
         /// <summary>
@@ -57,11 +59,13 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// Lets you convert media assets from MP4 to Smooth Streaming format. Also, lets you convert media assets 
         /// from Smooth Streaming to the Apple HTTP Live Streaming (HLS) format.
         /// </summary>
+        [Obsolete("The end of life date for Windows Azure Media Packager has been extended to March 1, 2017. Before that date, the functionality of these processors will be added to Media Encoder Standard (MES). Customers will be provided with instructions on how to migrate their workflows to send Jobs to MES. Format conversion and encryption capabilities may also be available through dynamic packaging and dynamic encryption.")]
         public const string WindowsAzureMediaPackager = "Windows Azure Media Packager";
 
         /// <summary>
         /// Lets you encrypt media assets using PlayReady Protection.
         /// </summary>
+        [Obsolete("The end of life date for Windows Azure Media Encryptor has been extended to March 1, 2017. Before that date, the functionality of these processors will be added to Media Encoder Standard (MES). Customers will be provided with instructions on how to migrate their workflows to send Jobs to MES. Format conversion and encryption capabilities may also be available through dynamic packaging and dynamic encryption.")]
         public const string WindowsAzureMediaEncryptor = "Windows Azure Media Encryptor";
 
         /// <summary>

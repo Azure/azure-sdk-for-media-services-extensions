@@ -145,14 +145,5 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// Produces a single MP4 file with a bitrate of 56 kbps, and stereo AAC audio.
         /// </summary>
         public const string H264SingleBitrateLowQualitySDForAndroid = "H264 Single Bitrate Low Quality SD for Android";
-        
-        #region Thumbnail Presets
-        /// <summary>
-        /// Produces a series of JPEG thumbnails 5 seconds apart, 300 pixels wide. The height is determined by the source frame size.
-        /// Use this preset name to generate a series of thumbnails for use in Xbox Live Applications. For information about providing 
-        /// a custom configuration file, see <a href="http://msdn.microsoft.com/en-us/library/windowsazure/hh973624.aspx" >Task Preset for Thumbnail Generation.</a>
-        /// </summary>
-        public const string Thumbnails = "Thumbnails";
-        #endregion
     }
 }

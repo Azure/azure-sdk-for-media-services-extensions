@@ -12,7 +12,7 @@
     <description>A NuGet package that contains a set of extension methods and helpers for the Windows Azure Media Services SDK for .NET.</description>
     <copyright>Copyright 2013 Microsoft Corporation. All Rights Reserved</copyright>
     <language>en-US</language>
-    <tags>windowsazureoffical Microsoft WindowsAzure MediaServices</tags>
+    <tags>windowsazureofficial Microsoft WindowsAzure MediaServices</tags>
     <dependencies>
 
       <dependency id="Microsoft.Data.OData" version="5.6.4" />

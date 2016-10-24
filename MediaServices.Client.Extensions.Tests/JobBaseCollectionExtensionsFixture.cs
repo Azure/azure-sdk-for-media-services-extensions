@@ -31,8 +31,8 @@ namespace MediaServices.Client.Extensions.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public void ShouldThrowCreateWithSingleTaskIfJobCollectiontIsNull()
         {
-            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
@@ -45,8 +45,8 @@ namespace MediaServices.Client.Extensions.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public void ShouldThrowCreateWithSingleTaskIfInputAssetIsNull()
         {
-            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             IAsset inputAsset = null;
@@ -58,12 +58,12 @@ namespace MediaServices.Client.Extensions.Tests
         [ExpectedException(typeof(ArgumentNullException))]
         public void ShouldThrowCreateWithSingleTaskIfStrategyIsNull()
         {
-            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             IAccountSelectionStrategy strategy = null;
-            
+
             this.asset = this.context.Assets.CreateFromFile("smallwmv1.wmv", AssetCreationOptions.None);
 
             this.context.Jobs.CreateWithSingleTask(mediaProcessorName, taskConfiguration, this.asset, strategy, outputAssetName, outputAssetOptions);
@@ -74,7 +74,7 @@ namespace MediaServices.Client.Extensions.Tests
         public void ShouldThrowCreateWithSingleTaskIfMediaProcessorNameIsUnknown()
         {
             var mediaProcessorName = "Unknown Media Processor";
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             this.asset = this.context.Assets.Create("empty", AssetCreationOptions.None);
@@ -86,8 +86,8 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv")]
         public void ShouldCreateWithSingleTask()
         {
-            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             this.asset = this.context.Assets.CreateFromFile("smallwmv1.wmv", AssetCreationOptions.None);

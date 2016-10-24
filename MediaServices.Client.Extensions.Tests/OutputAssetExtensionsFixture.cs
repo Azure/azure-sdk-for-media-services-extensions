@@ -14,20 +14,18 @@
 // limitations under the License.
 // </license>
 
-using System;
-using System.IO;
-
 namespace MediaServices.Client.Extensions.Tests
 {
+    using System;
+    using System.IO;
+    using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
-    using System.Configuration;
-    using System.Linq;
 
     [TestClass]
     public class OutputAssetExtensionsFixture
     {
-        
+
         public readonly string Preset = "H264 Broadband SD 4x3";
         private readonly string smallWmv = @"Media\smallwmv1.wmv";
         private CloudMediaContext context;
@@ -78,11 +76,11 @@ namespace MediaServices.Client.Extensions.Tests
             file.Upload(inputAssetFilePath);
 
             IJob job = context.Jobs.Create("Job to test using an account selection strategy for an output asset");
-            ITask task = job.Tasks.AddNew("Task to test using an account selection strategy for an output asset", GetMediaProcessor(MediaProcessorNames.AzureMediaEncoder), Preset, TaskOptions.None);
+            ITask task = job.Tasks.AddNew("Task to test using an account selection strategy for an output asset", GetMediaProcessor(MediaProcessorNames.MediaEncoderStandard), Preset, TaskOptions.None);
             task.InputAssets.Add(inputAsset);
             task.OutputAssets.AddNew("OutputAsset", strategy, AssetCreationOptions.None);
 
-            job.Submit();       
+            job.Submit();
 
             // Note that we don't want for the job to finish.  We just need the submit to succeed.
             IJob refreshedJob = context.Jobs.Where(c => c.Id == job.Id).FirstOrDefault();

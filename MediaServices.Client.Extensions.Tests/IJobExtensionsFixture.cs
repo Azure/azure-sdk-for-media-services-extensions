@@ -124,8 +124,8 @@ namespace MediaServices.Client.Extensions.Tests
         [ExpectedException(typeof(ArgumentException))]
         public void ShouldThrowStartExecutionProgressTaskIfJobDoesNotHaveValidId()
         {
-            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             this.asset = this.context.Assets.Create("TestAsset", AssetCreationOptions.None);
@@ -139,8 +139,8 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv")]
         public void ShouldStartExecutionProgressTaskAndInvokeCallbackWhenStateOrOverallProgressChange()
         {
-            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             this.asset = this.context.Assets.CreateFromFile("smallwmv1.wmv", AssetCreationOptions.None);
@@ -184,8 +184,8 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv")]
         public void ShouldStartExecutionProgressTaskWhenExecutionProgressChangedCallbackIsNull()
         {
-            var mediaProcessorName = MediaProcessorNames.AzureMediaEncoder;
-            var taskConfiguration = MediaEncoderTaskPresetStrings.H264SmoothStreaming720p;
+            var mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
+            var taskConfiguration = MediaEncoderStandardTaskPresetStrings.H264SingleBitrate720p;
             var outputAssetName = "Output Asset Name";
             var outputAssetOptions = AssetCreationOptions.None;
             this.asset = this.context.Assets.CreateFromFile("smallwmv1.wmv", AssetCreationOptions.None);

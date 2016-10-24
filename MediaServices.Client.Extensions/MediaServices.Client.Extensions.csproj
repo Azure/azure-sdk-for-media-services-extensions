@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="AssetBaseCollectionExtensions.cs" />
     <Compile Include="IAssetFileExtensions.cs" />
+    <Compile Include="MediaEncoderStandardTaskPresetStrings.cs" />
     <Compile Include="Metadata\AssetFileMetadata.cs" />
     <Compile Include="CapacityBasedAccountSelectionStrategyListEntry.cs" />
     <Compile Include="CapacityBasedAccountSelectionStrategy.cs" />

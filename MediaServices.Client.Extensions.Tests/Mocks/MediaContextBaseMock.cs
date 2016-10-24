@@ -13,13 +13,12 @@
 // limitations under the License.
 // </license>
 
-using Microsoft.WindowsAzure.MediaServices.Client.ContentKeyAuthorization;
-using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
-
 namespace MediaServices.Client.Extensions.Tests.Mocks
 {
     using System;
     using Microsoft.WindowsAzure.MediaServices.Client;
+    using Microsoft.WindowsAzure.MediaServices.Client.ContentKeyAuthorization;
+    using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
 
     public class MediaContextBaseMock : MediaContextBase
     {
@@ -37,32 +36,55 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
         }
 
         public override ContentKeyAuthorizationPolicyOptionCollection ContentKeyAuthorizationPolicyOptions { get { throw new NotImplementedException(); } }
+
         public override ContentKeyAuthorizationPolicyCollection ContentKeyAuthorizationPolicies { get { throw new NotImplementedException(); } }
+
         public override AssetDeliveryPolicyCollection AssetDeliveryPolicies { get { throw new NotImplementedException(); } }
+
         public override ChannelBaseCollection Channels { get { throw new NotImplementedException(); } }
+
         public override ProgramBaseCollection Programs { get { throw new NotImplementedException(); } }
+
         public override StreamingEndpointBaseCollection StreamingEndpoints { get { throw new NotImplementedException(); } }
+
         public override OperationBaseCollection Operations { get { throw new NotImplementedException(); } }
+
         public override AccessPolicyBaseCollection AccessPolicies { get { throw new NotImplementedException(); } }
+
         public override AssetBaseCollection Assets { get { throw new NotImplementedException(); } }
+
         public override ContentKeyBaseCollection ContentKeys { get { throw new NotImplementedException(); } }
 
-        public override EncodingReservedUnitCollection EncodingReservedUnits
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public override EncodingReservedUnitCollection EncodingReservedUnits { get { throw new NotImplementedException(); } }
 
         public override IStorageAccount DefaultStorageAccount { get { throw new NotImplementedException(); } }
+
         public override AssetFileBaseCollection Files { get { throw new NotImplementedException(); } }
+
         public override IngestManifestAssetCollection IngestManifestAssets { get { throw new NotImplementedException(); } }
+
         public override IngestManifestFileCollection IngestManifestFiles { get { throw new NotImplementedException(); } }
+
         public override IngestManifestCollection IngestManifests { get { throw new NotImplementedException(); } }
+
         public override JobBaseCollection Jobs { get { throw new NotImplementedException(); } }
+
         public override JobTemplateBaseCollection JobTemplates { get { throw new NotImplementedException(); } }
+
         public override LocatorBaseCollection Locators { get { throw new NotImplementedException(); } }
+
         public override MediaProcessorBaseCollection MediaProcessors { get { throw new NotImplementedException(); } }
+
         public override NotificationEndPointCollection NotificationEndPoints { get { throw new NotImplementedException(); } }
+
         public override StorageAccountBaseCollection StorageAccounts { get { return _storageAccounts; } }
+
         public override StreamingFilterBaseCollection Filters { get { throw new NotImplementedException(); } }
+
+        public override ChannelMetricsCollection ChannelMetrics { get { throw new NotImplementedException(); } }
+
+        public override MonitoringConfigurationCollection MonitoringConfigurations { get { throw new NotImplementedException(); } }
+
+        public override StreamingEndPointRequestLogCollection StreamingEndPointRequestLogs { get { throw new NotImplementedException(); } }
     }
 }

@@ -334,7 +334,6 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\dummy.ism", "Media")]
         public void ShouldCreateAssetFromFolderWithRandomAccountSelectionStrategy()
         {
-
             RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
             var folderName = "Media";
             this.asset = this.context.Assets.CreateFromFolder(folderName, strategy, AssetCreationOptions.None, null);

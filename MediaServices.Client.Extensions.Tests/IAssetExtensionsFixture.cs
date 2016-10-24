@@ -183,6 +183,7 @@ namespace MediaServices.Client.Extensions.Tests
                 af =>
                     !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase)
+                    && !af.Name.EndsWith(ILocatorExtensions.ClientManifestFileExtension, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(IAssetExtensions.InputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     )
                 .OrderBy(af => af.Name)
@@ -265,6 +266,7 @@ namespace MediaServices.Client.Extensions.Tests
                 af =>
                     !af.Name.EndsWith(IAssetExtensions.MetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(ILocatorExtensions.ManifestFileExtension, StringComparison.OrdinalIgnoreCase)
+                    && !af.Name.EndsWith(ILocatorExtensions.ClientManifestFileExtension, StringComparison.OrdinalIgnoreCase)
                     && !af.Name.EndsWith(IAssetExtensions.InputMetadataFileSuffix, StringComparison.OrdinalIgnoreCase)
                     )
                 .OrderBy(af => af.Name)

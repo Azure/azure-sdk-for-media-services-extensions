@@ -42,7 +42,7 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
         public DateTime? StartTime { get; set; }
 
         public DateTime? EndTime { get; set; }
-        
+
         public string PerfMessage { get; set; }
 
         public int Priority { get; set; }
@@ -62,6 +62,8 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
         public InputAssetCollection<IAsset> InputAssets { get; set; }
 
         public OutputAssetCollection OutputAssets { get; set; }
+
+        public TaskNotificationSubscriptionCollection TaskNotificationSubscriptions { get { throw new NotImplementedException(); } }
 
         public string GetClearConfiguration()
         {

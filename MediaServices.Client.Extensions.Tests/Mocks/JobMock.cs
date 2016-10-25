@@ -13,8 +13,6 @@
 // limitations under the License.
 // </license>
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace MediaServices.Client.Extensions.Tests.Mocks
 {
     using System;

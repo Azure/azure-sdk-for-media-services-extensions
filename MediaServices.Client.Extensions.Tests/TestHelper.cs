@@ -17,8 +17,10 @@ namespace MediaServices.Client.Extensions.Tests
 {
     using System;
     using System.Configuration;
-    ﻿using Microsoft.WindowsAzure.MediaServices.Client;
+    using Microsoft.WindowsAzure.MediaServices.Client;
+    using Microsoft.WindowsAzure.Storage;
     using Microsoft.WindowsAzure.Storage.Auth;
+    using Microsoft.WindowsAzure.Storage.Blob;
 
     public class TestHelper
     {
@@ -45,6 +47,13 @@ namespace MediaServices.Client.Extensions.Tests
             return new StorageCredentials(
                 ConfigurationManager.AppSettings["MediaServiceStorageAccountName"],
                 ConfigurationManager.AppSettings["MediaServiceStorageAccountKey"]);
+        }
+
+        public static CloudBlobClient CreateCloudBlobClient()
+        {
+            var storageAccount = new CloudStorageAccount(CreateStorageCredentials(), true);
+
+            return storageAccount.CreateCloudBlobClient();
         }
     }
 }

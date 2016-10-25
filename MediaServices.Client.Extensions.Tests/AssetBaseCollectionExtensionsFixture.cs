@@ -25,12 +25,15 @@ namespace MediaServices.Client.Extensions.Tests
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
+    using Microsoft.WindowsAzure.Storage.Auth;
+    using Microsoft.WindowsAzure.Storage.Blob;
 
     [TestClass]
     public class AssetBaseCollectionExtensionsFixture
     {
         private CloudMediaContext context;
         private IAsset asset;
+        private CloudBlobContainer container;
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -70,8 +73,8 @@ namespace MediaServices.Client.Extensions.Tests
         [TestMethod]
         public void ShouldCreateAssetWithRandomAccountSelectionStrategy()
         {
-            IAccountSelectionStrategy selectionStrategy = RandomAccountSelectionStrategy.FromAccounts(context);
-            
+            IAccountSelectionStrategy selectionStrategy = RandomAccountSelectionStrategy.FromAccounts(this.context);
+
             this.asset = this.context.Assets.Create(Guid.NewGuid().ToString(), selectionStrategy, AssetCreationOptions.None);
         }
 
@@ -182,7 +185,7 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv")]
         public void ShouldCreateAssetFromFileWithRandomAccountSelectionStrategy()
         {
-            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
+            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(this.context);
 
             var fileName = "smallwmv1.wmv";
             this.asset = this.context.Assets.CreateFromFile(fileName, strategy, AssetCreationOptions.None, null);
@@ -302,6 +305,140 @@ namespace MediaServices.Client.Extensions.Tests
         }
 
         [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        public void ShouldCreateAssetFromBlob()
+        {
+            var fileName = "smallwmv1.wmv";
+            var containerName = "createassetfromblobtest-" + Guid.NewGuid();
+            var blobClient = TestHelper.CreateCloudBlobClient();
+            this.container = blobClient.GetContainerReference(containerName);
+
+            var sourceBlob = CreateBlobFromFile(this.container, fileName);
+            this.asset = this.context.Assets.CreateFromBlob(sourceBlob, blobClient.Credentials, AssetCreationOptions.None);
+
+            Assert.IsNotNull(this.asset);
+            Assert.AreEqual(fileName, this.asset.Name);
+
+            var assetFiles = this.asset.AssetFiles.ToList().OrderBy(a => a.Name);
+
+            Assert.AreEqual(1, assetFiles.Count());
+            Assert.AreEqual(fileName, assetFiles.ElementAt(0).Name);
+            Assert.IsTrue(assetFiles.ElementAt(0).IsPrimary);
+            Assert.AreEqual(sourceBlob.Properties.Length, assetFiles.ElementAt(0).ContentFileSize);
+            Assert.AreEqual(sourceBlob.Properties.ContentType, assetFiles.ElementAt(0).MimeType);
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCreateAssetFromBlobIfAssetCollectionIsNull()
+        {
+            var fileName = "smallwmv1.wmv";
+            var containerName = "createassetfromblobtest-" + Guid.NewGuid();
+            var blobClient = TestHelper.CreateCloudBlobClient();
+            this.container = blobClient.GetContainerReference(containerName);
+            var sourceBlob = CreateBlobFromFile(this.container, fileName);
+            AssetBaseCollection nullAssets = null;
+
+            try
+            {
+                this.asset = nullAssets.CreateFromBlob(sourceBlob, blobClient.Credentials, AssetCreationOptions.None);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCreateAssetFromBlobIfSourceBlobIsNull()
+        {
+            var blobClient = TestHelper.CreateCloudBlobClient();
+            CloudBlockBlob nullSourceBlob = null;
+
+            try
+            {
+                this.asset = this.context.Assets.CreateFromBlob(nullSourceBlob, blobClient.Credentials, AssetCreationOptions.None);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCreateAssetFromBlobIfStorageCredentialsIsNull()
+        {
+            var fileName = "smallwmv1.wmv";
+            var containerName = "createassetfromblobtest-" + Guid.NewGuid();
+            var blobClient = TestHelper.CreateCloudBlobClient();
+            this.container = blobClient.GetContainerReference(containerName);
+            var sourceBlob = CreateBlobFromFile(this.container, fileName);
+            StorageCredentials nullStorageCredentials = null;
+
+            try
+            {
+                this.asset = this.context.Assets.CreateFromBlob(sourceBlob, nullStorageCredentials, AssetCreationOptions.None);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentNullException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCreateAssetFromBlobIfStorageCredentialsIsAnonymous()
+        {
+            var fileName = "smallwmv1.wmv";
+            var containerName = "createassetfromblobtest-" + Guid.NewGuid();
+            var blobClient = TestHelper.CreateCloudBlobClient();
+            this.container = blobClient.GetContainerReference(containerName);
+            var sourceBlob = CreateBlobFromFile(this.container, fileName);
+            var storageCredentials = new StorageCredentials();
+
+            try
+            {
+                this.asset = this.context.Assets.CreateFromBlob(sourceBlob, storageCredentials, AssetCreationOptions.None);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw;
+            }
+        }
+
+        [TestMethod]
+        [DeploymentItem(@"Media\smallwmv1.wmv")]
+        [ExpectedException(typeof(AggregateException))]
+        public void ShouldThrowCreateAssetFromBlobIfStorageCredentialsIsSAS()
+        {
+            var fileName = "smallwmv1.wmv";
+            var containerName = "createassetfromblobtest-" + Guid.NewGuid();
+            var blobClient = TestHelper.CreateCloudBlobClient();
+            this.container = blobClient.GetContainerReference(containerName);
+            var sourceBlob = CreateBlobFromFile(this.container, fileName);
+            var storageCredentials = new StorageCredentials("?se=2015-05-22T19%3A46%3A16Z&sr=c&si=efa38601-1f8e-4e3a-9a85-2485e2a4f374&sv=2012-02-12&sig=CwUScO98yTHKNRdzwJNRIB7BhRHc9fg4ng1Bb0KE0vo%3D");
+
+            try
+            {
+                this.asset = this.context.Assets.CreateFromBlob(sourceBlob, storageCredentials, AssetCreationOptions.None);
+            }
+            catch (AggregateException exception)
+            {
+                Assert.IsInstanceOfType(exception.InnerException, typeof(ArgumentException));
+                throw;
+            }
+        }
+
+        [TestMethod]
         [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
         [DeploymentItem(@"Media\smallwmv2.wmv", "Media")]
         [DeploymentItem(@"Media\dummy.ism", "Media")]
@@ -334,7 +471,7 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\dummy.ism", "Media")]
         public void ShouldCreateAssetFromFolderWithRandomAccountSelectionStrategy()
         {
-            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(context);
+            RandomAccountSelectionStrategy strategy = RandomAccountSelectionStrategy.FromAccounts(this.context);
             var folderName = "Media";
             this.asset = this.context.Assets.CreateFromFolder(folderName, strategy, AssetCreationOptions.None, null);
             var assetId = this.asset.Id;
@@ -418,6 +555,11 @@ namespace MediaServices.Client.Extensions.Tests
             {
                 this.asset.Delete();
             }
+
+            if (this.container != null)
+            {
+                this.container.Delete();
+            }
         }
 
         private static void AssertUploadedFile(string originalFolderPath, string fileName, UploadProgressChangedEventArgs uploadProgressChangedEventArgs)
@@ -427,6 +569,16 @@ namespace MediaServices.Client.Extensions.Tests
             Assert.AreEqual(expected.Length, uploadProgressChangedEventArgs.BytesUploaded);
             Assert.AreEqual(expected.Length, uploadProgressChangedEventArgs.TotalBytes);
             Assert.AreEqual(100, uploadProgressChangedEventArgs.Progress);
+        }
+
+        private static CloudBlockBlob CreateBlobFromFile(CloudBlobContainer container, string fileName)
+        {
+            container.CreateIfNotExists();
+
+            var blob = container.GetBlockBlobReference(fileName);
+            blob.UploadFromFile(fileName, FileMode.Open);
+
+            return blob;
         }
     }
 }

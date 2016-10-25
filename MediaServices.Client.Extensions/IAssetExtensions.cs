@@ -24,7 +24,6 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     using System.Threading.Tasks;
     using Microsoft.WindowsAzure.MediaServices.Client.Metadata;
     using Microsoft.WindowsAzure.MediaServices.Client.TransientFaultHandling;
-    using Microsoft.WindowsAzure.Storage;
     using Microsoft.WindowsAzure.Storage.Auth;
     using Microsoft.WindowsAzure.Storage.Blob;
     using Microsoft.WindowsAzure.Storage.RetryPolicies;
@@ -43,8 +42,6 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// File name suffix with extension which represents metadata about input of encoder.
         /// </summary>
         public const string InputMetadataFileSuffix = "_metadata.xml";
-
-        private const int MaxNumberOfConcurrentCopyFromBlobOperations = 750;
 
         /// <summary>
         /// Returns a <see cref="System.Threading.Tasks.Task"/> instance to generate <see cref="IAssetFile"/> for the <paramref name="asset"/>.
@@ -391,7 +388,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 CloudBlobContainer sourceContainer = new CloudBlobContainer(sourceAsset.Uri, new StorageCredentials(sourceLocator.ContentAccessComponent));
                 CloudBlobContainer destinationContainer = new CloudBlobContainer(destinationAsset.Uri, destinationStorageCredentials);
 
-                await CopyBlobsAsync(sourceContainer, destinationContainer, options, cancellationToken).ConfigureAwait(false);
+                await CopyBlobHelpers.CopyBlobsAsync(sourceContainer, destinationContainer, options, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await CopyAssetFilesAsync(sourceAsset, destinationAsset, cancellationToken).ConfigureAwait(false);
@@ -500,50 +497,6 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             }
 
             return smoothStreamingUri;
-        }
-
-        private static async Task CopyBlobsAsync(CloudBlobContainer sourceContainer, CloudBlobContainer destinationContainer, BlobRequestOptions options, CancellationToken cancellationToken)
-        {
-            BlobContinuationToken continuationToken = null;
-
-            do
-            {
-                BlobResultSegment resultSegment = await sourceContainer.ListBlobsSegmentedAsync(null, true, BlobListingDetails.None, MaxNumberOfConcurrentCopyFromBlobOperations, continuationToken, options, null, cancellationToken).ConfigureAwait(false);
-
-                IEnumerable<Task> copyTasks = resultSegment
-                    .Results
-                    .Cast<CloudBlockBlob>()
-                    .Select(
-                        sourceBlob =>
-                        {
-                            CloudBlockBlob destinationBlob = destinationContainer.GetBlockBlobReference(sourceBlob.Name);
-
-                            return CopyBlobAsync(destinationBlob, sourceBlob, options, cancellationToken);
-                        });
-
-                await Task.WhenAll(copyTasks).ConfigureAwait(false);
-                cancellationToken.ThrowIfCancellationRequested();
-
-                continuationToken = resultSegment.ContinuationToken;
-            }
-            while (continuationToken != null);
-        }
-
-        private static async Task CopyBlobAsync(CloudBlockBlob destinationBlob, CloudBlockBlob sourceBlob, BlobRequestOptions options, CancellationToken cancellationToken)
-        {
-            await destinationBlob.StartCopyFromBlobAsync(sourceBlob, null, null, options, null, cancellationToken).ConfigureAwait(false);
-
-            CopyState copyState = destinationBlob.CopyState;
-            while (copyState == null || copyState.Status == CopyStatus.Pending)
-            {
-                await destinationBlob.FetchAttributesAsync(null, options, null, cancellationToken).ConfigureAwait(false);
-
-                copyState = destinationBlob.CopyState;
-                if (copyState != null && copyState.Status != CopyStatus.Pending && copyState.Status != CopyStatus.Success)
-                {
-                    throw new StorageException(copyState.StatusDescription);
-                }
-            }
         }
 
         private static Task CopyAssetFilesAsync(IAsset sourceAsset, IAsset destinationAsset, CancellationToken cancellationToken)

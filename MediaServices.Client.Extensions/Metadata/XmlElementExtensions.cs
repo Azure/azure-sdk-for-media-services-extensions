@@ -29,6 +29,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
         private const double DefaultDoubleAttributeValue = 0;
 
         private static readonly TimeSpan DefaultTimeSpanAttributeValue = TimeSpan.Zero;
+
         internal static string GetAttributeOrDefault(this XElement element, XName name)
         {
             string attributeValue = null;
@@ -41,6 +42,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
 
             return attributeValue;
         }
+
         internal static long GetAttributeAsLongOrDefault(this XElement element, XName name)
         {
             string attributeValueString = element.GetAttributeOrDefault(name);
@@ -53,6 +55,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
 
             return attributeValue;
         }
+
         internal static int GetAttributeAsIntOrDefault(this XElement element, XName name)
         {
             string attributeValueString = element.GetAttributeOrDefault(name);
@@ -65,6 +68,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
 
             return attributeValue;
         }
+
         internal static double GetAttributeAsDoubleOrDefault(this XElement element, XName name)
         {
             string attributeValueString = element.GetAttributeOrDefault(name);

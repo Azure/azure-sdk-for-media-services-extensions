@@ -25,7 +25,6 @@ namespace MediaServices.Client.Extensions.Tests
     [TestClass]
     public class OutputAssetExtensionsFixture
     {
-
         public readonly string Preset = "H264 Broadband SD 4x3";
         private readonly string smallWmv = @"Media\smallwmv1.wmv";
         private CloudMediaContext context;
@@ -60,7 +59,6 @@ namespace MediaServices.Client.Extensions.Tests
 
             return mp;
         }
-
 
         [TestMethod]
         [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]

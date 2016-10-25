@@ -14,15 +14,15 @@
 // limitations under the License.
 // </license>
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.WindowsAzure.MediaServices.Client;
-using MediaServices.Client.Extensions.Tests.Mocks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace MediaServices.Client.Extensions.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using MediaServices.Client.Extensions.Tests.Mocks;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Microsoft.WindowsAzure.MediaServices.Client;
+
     [TestClass]
     public class CapacityBasedAccountSelectionStrategyFixture
     {
@@ -73,7 +73,7 @@ namespace MediaServices.Client.Extensions.Tests
             List<IStorageAccount> storageAccountList = new List<IStorageAccount>();
 
             for (int i = 0; i < accountNames.Length; i++)
-            {            
+            {
                 IStorageAccount account = GetStorageAccount(accountNames[i], bytesUsedValues[i]);
                 storageAccountList.Add(account);
             }
@@ -124,7 +124,7 @@ namespace MediaServices.Client.Extensions.Tests
         public void CapacityBasedShouldThrowIfAccountNamesCannotBeFound()
         {
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
-            
+
             MediaContextBase context = GetMediaContextBase(storageAccountList);
 
             CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(context);
@@ -150,7 +150,7 @@ namespace MediaServices.Client.Extensions.Tests
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _oneZeroBytesUsedValues);
 
             MediaContextBase context = GetMediaContextBase(storageAccountList);
-            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity:oneGB);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB);
 
             string accountNameToUse = strategy.SelectAccountForAsset();
 
@@ -168,7 +168,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             MediaContextBase context = GetMediaContextBase(storageAccountList);
 
-            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, includeAccountsWithNoCapacityData:true, maximumStorageAccountCapacity: oneGB);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, includeAccountsWithNoCapacityData: true, maximumStorageAccountCapacity: oneGB);
 
             strategy.Random = new RandomNumberGeneratorMock(_valuesForRandomNumberGeneratorToReturnEven);
 
@@ -205,7 +205,7 @@ namespace MediaServices.Client.Extensions.Tests
             // we will always pick the two middle accounts.
             storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _skewedBytesUsedValues);
             context = GetMediaContextBase(storageAccountList);
-            strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity:oneGB);
+            strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB);
 
             strategy.Random = new RandomNumberGeneratorMock(_valuesForRandomNumberGeneratorToReturnEven);
 
@@ -243,7 +243,7 @@ namespace MediaServices.Client.Extensions.Tests
             List<IStorageAccount> storageAccountList = GetStorageAccountList(_fourStorageAccountNameArray, _evenBytesUsedValues);
 
             MediaContextBase context = GetMediaContextBase(storageAccountList);
-            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity:oneGB);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB);
 
             VerifyStrategyEntriesMatchExpectations(storageAccountList, strategy, oneGB, false);
 
@@ -272,7 +272,7 @@ namespace MediaServices.Client.Extensions.Tests
 
             // Create the CapacityBasedAccountSelectionStrategy
             MediaContextBase context = GetMediaContextBase(storageAccountList);
-            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB, storageAccountNames:filterArray);
+            CapacityBasedAccountSelectionStrategy strategy = CapacityBasedAccountSelectionStrategy.FromAccounts(context, maximumStorageAccountCapacity: oneGB, storageAccountNames: filterArray);
 
             // Now ensure that the internal list only has the expected number of entries.
             IList<CapacityBasedAccountSelectionStrategyListEntry> accountListFromStrategy = strategy.GetStorageAccounts();

@@ -22,6 +22,10 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.WindowsAzure.MediaServices.Client.TransientFaultHandling;
+    using Microsoft.WindowsAzure.Storage.Auth;
+    using Microsoft.WindowsAzure.Storage.Blob;
+    using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
     /// <summary>
     /// Contains extension methods and helpers for the <see cref="AssetBaseCollection"/> class..
@@ -464,6 +468,80 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public static IAsset CreateFromFolder(this AssetBaseCollection assets, string folderPath, AssetCreationOptions options)
         {
             return assets.CreateFromFolder(folderPath, options, null);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the file in <paramref name="sourceBlob"/>.
+        /// </summary>
+        /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
+        /// <param name="sourceBlob">The <see cref="Microsoft.WindowsAzure.Storage.Blob.CloudBlockBlob"/> instance that contains the file to copy.</param>
+        /// <param name="storageCredentials">The <see cref="Microsoft.WindowsAzure.Storage.Auth.StorageCredentials"/> instance for the new asset to create.</param>
+        /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
+        /// <param name="cancellationToken">The <see cref="System.Threading.CancellationToken"/> instance used for cancellation.</param>
+        /// <returns>A <see cref="System.Threading.Tasks.Task&lt;IAsset&gt;"/> instance for a new <see cref="IAsset"/> with the file in <paramref name="sourceBlob"/>.</returns>
+        public static async Task<IAsset> CreateFromBlobAsync(this AssetBaseCollection assets, CloudBlockBlob sourceBlob, StorageCredentials storageCredentials, AssetCreationOptions options, CancellationToken cancellationToken)
+        {
+            if (assets == null)
+            {
+                throw new ArgumentNullException("assets", "The assets collection cannot be null.");
+            }
+
+            if (sourceBlob == null)
+            {
+                throw new ArgumentNullException("sourceBlob", "The source blob cannot be null.");
+            }
+
+            if (storageCredentials == null)
+            {
+                throw new ArgumentNullException("storageCredentials", "The destination storage credentials cannot be null.");
+            }
+
+            if (storageCredentials.IsAnonymous || storageCredentials.IsSAS)
+            {
+                throw new ArgumentException("The destination storage credentials must contain the account key credentials.", "destinationStorageCredentials");
+            }
+
+            MediaContextBase context = assets.MediaContext;
+
+            IAsset asset = await assets.CreateAsync(sourceBlob.Name, storageCredentials.AccountName, options, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IRetryPolicy retryPolicy = context.MediaServicesClassFactory.GetBlobStorageClientRetryPolicy().AsAzureStorageClientRetryPolicy();
+            BlobRequestOptions blobOptions = new BlobRequestOptions { RetryPolicy = retryPolicy };
+            CloudBlobContainer container = new CloudBlobContainer(asset.Uri, storageCredentials);
+            CloudBlockBlob blob = container.GetBlockBlobReference(sourceBlob.Name);
+
+            await CopyBlobHelpers.CopyBlobAsync(sourceBlob, blob, blobOptions, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IAssetFile assetFile = await asset.AssetFiles.CreateAsync(sourceBlob.Name, cancellationToken).ConfigureAwait(false);
+
+            assetFile.IsPrimary = true;
+            if (sourceBlob.Properties != null)
+            {
+                assetFile.ContentFileSize = sourceBlob.Properties.Length;
+                assetFile.MimeType = sourceBlob.Properties.ContentType;
+            }
+
+            await assetFile.UpdateAsync().ConfigureAwait(false);
+
+            return asset;
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="IAsset"/> with the file in <paramref name="sourceBlob"/>.
+        /// </summary>
+        /// <param name="assets">The <see cref="AssetBaseCollection"/> instance.</param>
+        /// <param name="sourceBlob">The <see cref="Microsoft.WindowsAzure.Storage.Blob.CloudBlockBlob"/> instance that contains the file to copy.</param>
+        /// <param name="storageCredentials">The <see cref="Microsoft.WindowsAzure.Storage.Auth.StorageCredentials"/> instance for the new asset to create.</param>
+        /// <param name="options">The <see cref="AssetCreationOptions"/>.</param>
+        /// <returns>A new <see cref="IAsset"/> with the file in <paramref name="sourceBlob"/>.</returns>
+        public static IAsset CreateFromBlob(this AssetBaseCollection assets, CloudBlockBlob sourceBlob, StorageCredentials storageCredentials, AssetCreationOptions options)
+        {
+            using (Task<IAsset> task = assets.CreateFromBlobAsync(sourceBlob, storageCredentials, options, CancellationToken.None))
+            {
+                return task.Result;
+            }
         }
     }
 }

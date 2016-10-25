@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetBaseCollectionExtensions.cs" />
+    <Compile Include="CopyBlobHelpers.cs" />
     <Compile Include="IAssetFileExtensions.cs" />
     <Compile Include="MediaEncoderStandardTaskPresetStrings.cs" />
     <Compile Include="Metadata\AssetFileMetadata.cs" />

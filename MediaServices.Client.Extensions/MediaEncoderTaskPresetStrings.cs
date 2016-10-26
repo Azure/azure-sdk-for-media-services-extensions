@@ -15,10 +15,13 @@
 
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
+    using System;
+
     /// <summary>
     /// Contains string constants with the available Task Preset Strings for Windows Azure Media Encoder.
     /// For more information, please visit <a href="http://msdn.microsoft.com/library/windowsazure/jj129582.aspx">http://msdn.microsoft.com/library/windowsazure/jj129582.aspx</a>.
     /// </summary>
+    [Obsolete]
     public static class MediaEncoderTaskPresetStrings
     {
         #region Audio Coding Standard

@@ -125,6 +125,5 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
 
             return context;
         }
-
     }
 }

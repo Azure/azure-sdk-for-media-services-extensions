@@ -29,6 +29,11 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         public const string ManifestFileExtension = ".ism";
 
         /// <summary>
+        /// Represents the client manifest file extension for Smooth Streaming.
+        /// </summary>
+        public const string ClientManifestFileExtension = ".ismc";
+
+        /// <summary>
         /// Represents the URL dynamic packaging parameter for HLS.
         /// </summary>
         public const string HlsStreamingParameter = "(format=m3u8-aapl)";

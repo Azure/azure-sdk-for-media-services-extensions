@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </license>
-using System;
 
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
+    using System;
+
     public static class OutputAssetCollectionExtensions
     {
         /// <summary>
@@ -31,7 +32,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         {
             if (collection == null)
             {
-                throw new ArgumentNullException("collection");            
+                throw new ArgumentNullException("collection");
             }
 
             if (strategy == null)

@@ -145,12 +145,11 @@ namespace MediaServices.Client.Extensions.Tests
         [DeploymentItem(@"Media\smallwmv1.wmv")]
         public void ShouldGetAssetFileMetadata()
         {
-            var source = "smallwmv1.wmv";
-            this.asset = this.context.Assets.CreateFromFile(source, AssetCreationOptions.None);
+            this.asset = this.context.Assets.CreateFromFile("smallwmv1.wmv", AssetCreationOptions.None);
 
             var job = this.context.Jobs.CreateWithSingleTask(
-                MediaProcessorNames.AzureMediaEncoder,
-                MediaEncoderTaskPresetStrings.H264AdaptiveBitrateMP4Set720p,
+                MediaProcessorNames.MediaEncoderStandard,
+                MediaEncoderStandardTaskPresetStrings.H264MultipleBitrate720p,
                 this.asset,
                 "Output Asset Name",
                 AssetCreationOptions.None);
@@ -160,10 +159,11 @@ namespace MediaServices.Client.Extensions.Tests
 
             this.outputAsset = job.OutputMediaAssets[0];
 
+            var source = "smallwmv1_960x720_3400.mp4";
             var assetFile = this.outputAsset
                 .AssetFiles
                 .ToList()
-                .First(af => af.Name.Equals("smallwmv1_H264_3400kbps_AAC_und_ch2_96kbps.mp4", StringComparison.OrdinalIgnoreCase));
+                .First(af => af.Name.Equals(source, StringComparison.OrdinalIgnoreCase));
 
             var sasLocator = this.context.Locators.Create(
                 LocatorType.Sas,
@@ -176,7 +176,7 @@ namespace MediaServices.Client.Extensions.Tests
             Assert.IsNotNull(assetFileMetadata);
             Assert.AreEqual(assetFile.Name, assetFileMetadata.Name);
             Assert.AreEqual(assetFile.ContentFileSize, assetFileMetadata.Size);
-            Assert.AreEqual(TimeSpan.FromSeconds(5.119), assetFileMetadata.Duration);
+            Assert.AreEqual(TimeSpan.FromSeconds(5.206), assetFileMetadata.Duration);
 
             Assert.IsNotNull(assetFileMetadata.Sources);
             Assert.AreEqual(1, assetFileMetadata.Sources.Count());
@@ -186,27 +186,28 @@ namespace MediaServices.Client.Extensions.Tests
             Assert.IsNotNull(assetFileMetadata.VideoTracks);
             Assert.AreEqual(1, assetFileMetadata.VideoTracks.Count());
             Assert.IsNotNull(assetFileMetadata.VideoTracks.ElementAt(0));
-            Assert.AreEqual(0, assetFileMetadata.VideoTracks.ElementAt(0).Id);
-            Assert.AreEqual("AVC1", assetFileMetadata.VideoTracks.ElementAt(0).FourCC);
+            Assert.AreEqual(1, assetFileMetadata.VideoTracks.ElementAt(0).Id);
+            Assert.AreEqual("avc1", assetFileMetadata.VideoTracks.ElementAt(0).FourCC, true);
             Assert.AreEqual(960, assetFileMetadata.VideoTracks.ElementAt(0).Width);
             Assert.AreEqual(720, assetFileMetadata.VideoTracks.ElementAt(0).Height);
             Assert.AreEqual(4, assetFileMetadata.VideoTracks.ElementAt(0).DisplayAspectRatioNumerator);
             Assert.AreEqual(3, assetFileMetadata.VideoTracks.ElementAt(0).DisplayAspectRatioDenominator);
-            ////Assert.AreEqual(29.974, assetFileMetadata.VideoTracks.ElementAt(0).Framerate);
-            Assert.AreEqual(29.97, assetFileMetadata.VideoTracks.ElementAt(0).TargetFramerate);
+            ////Assert.AreEqual(29.971, assetFileMetadata.VideoTracks.ElementAt(0).Framerate);
+            ////Assert.AreEqual(29.97, assetFileMetadata.VideoTracks.ElementAt(0).TargetFramerate);
             ////Assert.AreEqual(3804, assetFileMetadata.VideoTracks.ElementAt(0).Bitrate);
-            Assert.AreEqual(3400, assetFileMetadata.VideoTracks.ElementAt(0).TargetBitrate);
+            ////Assert.AreEqual(3400, assetFileMetadata.VideoTracks.ElementAt(0).TargetBitrate);
 
             Assert.IsNotNull(assetFileMetadata.AudioTracks);
             Assert.AreEqual(1, assetFileMetadata.AudioTracks.Count());
             Assert.IsNotNull(assetFileMetadata.AudioTracks.ElementAt(0));
-            Assert.IsNull(assetFileMetadata.AudioTracks.ElementAt(0).EncoderVersion);
-            Assert.AreEqual(0, assetFileMetadata.AudioTracks.ElementAt(0).Id);
-            Assert.AreEqual("AacLc", assetFileMetadata.AudioTracks.ElementAt(0).Codec);
+            ////Assert.IsNull(assetFileMetadata.AudioTracks.ElementAt(0).EncoderVersion);
+            Assert.AreEqual(2, assetFileMetadata.AudioTracks.ElementAt(0).Id);
+            Assert.AreEqual("aac", assetFileMetadata.AudioTracks.ElementAt(0).Codec, true);
             Assert.AreEqual(2, assetFileMetadata.AudioTracks.ElementAt(0).Channels);
-            Assert.AreEqual(44100, assetFileMetadata.AudioTracks.ElementAt(0).SamplingRate);
-            Assert.AreEqual(93, assetFileMetadata.AudioTracks.ElementAt(0).Bitrate);
-            Assert.AreEqual(16, assetFileMetadata.AudioTracks.ElementAt(0).BitsPerSample);
+            Assert.AreEqual(48000, assetFileMetadata.AudioTracks.ElementAt(0).SamplingRate);
+            Assert.AreEqual(128, assetFileMetadata.AudioTracks.ElementAt(0).Bitrate);
+            ////Assert.AreEqual(0, assetFileMetadata.AudioTracks.ElementAt(0).BitsPerSample);
+            Assert.AreEqual("und", assetFileMetadata.AudioTracks.ElementAt(0).Language, true);
         }
 
         [TestMethod]

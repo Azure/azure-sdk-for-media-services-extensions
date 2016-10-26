@@ -16,7 +16,6 @@
 namespace MediaServices.Client.Extensions.Tests
 {
     using System;
-    using System.Configuration;
     using System.Linq;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
@@ -32,7 +31,7 @@ namespace MediaServices.Client.Extensions.Tests
         {
             MediaProcessorBaseCollection nullMediaProcessorCollection = null;
 
-            nullMediaProcessorCollection.GetLatestMediaProcessorByName(MediaProcessorNames.AzureMediaEncoder);
+            nullMediaProcessorCollection.GetLatestMediaProcessorByName(MediaProcessorNames.MediaEncoderStandard);
         }
 
         [TestMethod]
@@ -47,12 +46,12 @@ namespace MediaServices.Client.Extensions.Tests
         [TestMethod]
         public void ShouldGetLatestMediaProcessorByName()
         {
-            var mediaProcessor = this.context.MediaProcessors.GetLatestMediaProcessorByName(MediaProcessorNames.AzureMediaEncoder);
+            var mediaProcessor = this.context.MediaProcessors.GetLatestMediaProcessorByName(MediaProcessorNames.MediaEncoderStandard);
 
             Assert.IsNotNull(mediaProcessor);
 
             var expectedMediaProcessor = this.context.MediaProcessors
-                .Where(mp => mp.Name == MediaProcessorNames.AzureMediaEncoder)
+                .Where(mp => mp.Name == MediaProcessorNames.MediaEncoderStandard)
                 .ToList()
                 .Select(mp => new { mp.Id, mp.Name, Version = new Version(mp.Version) })
                 .OrderBy(mp => mp.Version)

@@ -14,24 +14,22 @@
 // limitations under the License.
 // </license>
 
-using System;
-using System.IO;
-
 namespace MediaServices.Client.Extensions.Tests
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Threading;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.WindowsAzure.MediaServices.Client;
-    using System.Configuration;
-    using System.Linq;
 
     [TestClass]
     public class OutputAssetExtensionsFixture
     {
-        
-        public readonly string Preset = "H264 Broadband SD 4x3";
         private readonly string smallWmv = @"Media\smallwmv1.wmv";
         private CloudMediaContext context;
-        private IAsset asset;
+        private IAsset inputAsset;
+        private IAsset outputAsset;
 
         public TestContext TestContext { get; set; }
 
@@ -39,30 +37,23 @@ namespace MediaServices.Client.Extensions.Tests
         public void Initialize()
         {
             this.context = TestHelper.CreateContext();
-            this.asset = null;
+            this.inputAsset = null;
+            this.outputAsset = null;
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            if (this.asset != null)
+            if (this.inputAsset != null)
             {
-                this.asset.Delete();
-            }
-        }
-
-        private IMediaProcessor GetMediaProcessor(string mpName)
-        {
-            IMediaProcessor mp = context.MediaProcessors.Where(c => c.Name == mpName).ToList().OrderByDescending(c => new Version(c.Version)).FirstOrDefault();
-
-            if (mp == null)
-            {
-                throw new ArgumentException(string.Format("Media Processor {0} is not found", mpName), "mpName");
+                this.inputAsset.Delete();
             }
 
-            return mp;
+            if (this.outputAsset != null)
+            {
+                this.outputAsset.Delete();
+            }
         }
-
 
         [TestMethod]
         [DeploymentItem(@"Media\smallwmv1.wmv", "Media")]
@@ -73,23 +64,29 @@ namespace MediaServices.Client.Extensions.Tests
             string inputAssetFilePath = Path.Combine(TestContext.TestDeploymentDir, smallWmv);
             string inputAssetFileName = Path.GetFileName(inputAssetFilePath);
 
-            IAsset inputAsset = context.Assets.Create("", strategy, AssetCreationOptions.StorageEncrypted);
-            IAssetFile file = inputAsset.AssetFiles.Create(inputAssetFileName);
+            this.inputAsset = context.Assets.Create("InputAsset", strategy, AssetCreationOptions.StorageEncrypted);
+            IAssetFile file = this.inputAsset.AssetFiles.Create(inputAssetFileName);
             file.Upload(inputAssetFilePath);
 
             IJob job = context.Jobs.Create("Job to test using an account selection strategy for an output asset");
-            ITask task = job.Tasks.AddNew("Task to test using an account selection strategy for an output asset", GetMediaProcessor(MediaProcessorNames.AzureMediaEncoder), Preset, TaskOptions.None);
-            task.InputAssets.Add(inputAsset);
+            ITask task = job.Tasks.AddNew(
+                "Task to test using an account selection strategy for an output asset",
+                context.MediaProcessors.GetLatestMediaProcessorByName(MediaProcessorNames.MediaEncoderStandard),
+                MediaEncoderStandardTaskPresetStrings.H264SingleBitrate4x3SD,
+                TaskOptions.None);
+            task.InputAssets.Add(this.inputAsset);
             task.OutputAssets.AddNew("OutputAsset", strategy, AssetCreationOptions.None);
 
-            job.Submit();       
+            job.Submit();
+            job.GetExecutionProgressTask(CancellationToken.None).Wait();
 
-            // Note that we don't want for the job to finish.  We just need the submit to succeed.
-            IJob refreshedJob = context.Jobs.Where(c => c.Id == job.Id).FirstOrDefault();
-            Assert.IsNotNull(refreshedJob);
-            Assert.AreEqual(1, refreshedJob.Tasks.Count, "Unexpected number of tasks in job");
-            Assert.AreEqual(1, refreshedJob.Tasks[0].OutputAssets.Count, "Unexpected number of output assets in the job");
-            Assert.IsNotNull(refreshedJob.Tasks[0].OutputAssets[0].StorageAccountName, "Storage account name in output assset is null");
+            Assert.IsNotNull(job);
+            Assert.AreEqual(1, job.Tasks.Count, "Unexpected number of tasks in job");
+            Assert.AreEqual(1, job.OutputMediaAssets.Count, "Unexpected number of output assets in the job");
+
+            this.outputAsset = job.OutputMediaAssets[0];
+
+            Assert.IsNotNull(outputAsset.StorageAccountName, "Storage account name in output assset is null");
         }
     }
 }

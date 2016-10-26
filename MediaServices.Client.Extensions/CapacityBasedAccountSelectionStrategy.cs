@@ -14,13 +14,12 @@
 // limitations under the License.
 // </license>
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-
 namespace Microsoft.WindowsAzure.MediaServices.Client
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     /// <summary>
     /// This IAccountSelectionStrategy implementation uses the number of used bytes in a storage account to help determine which storage account
     /// should be used to create the next asset.  It relies on the capacity metrics of the blob storage service to get the number of bytes used
@@ -84,7 +83,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
                 throw new ArgumentNullException("mediaContextBase");
             }
 
-            CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(mediaContextBase);                      
+            CapacityBasedAccountSelectionStrategy strategy = new CapacityBasedAccountSelectionStrategy(mediaContextBase);
 
             foreach (IStorageAccount storageAccount in GetAllStorageAccounts(mediaContextBase))
             {
@@ -281,5 +280,4 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
             return storageAccounts.AsEnumerable<IStorageAccount>();
         }
     }
-
 }

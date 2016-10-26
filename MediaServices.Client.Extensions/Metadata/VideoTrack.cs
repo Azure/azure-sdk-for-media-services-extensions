@@ -74,6 +74,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
         /// Get the encoded video width in pixels.
         /// </summary>
         public int Width { get; internal set; }
+
         internal static VideoTrack Load(XElement videoTrackElement)
         {
             VideoTrack videoTrack = new VideoTrack();

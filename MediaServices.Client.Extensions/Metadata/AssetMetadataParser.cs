@@ -76,6 +76,8 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
 
         internal static readonly XName EncoderVersionAttributeName = XName.Get("EncoderVersion");
 
+        internal static readonly XName LanguageAttributeName = XName.Get("Language");
+
         internal static async Task<IEnumerable<AssetFileMetadata>> ParseAssetFileMetadataAsync(Uri assetFileMetadataUri, IRetryPolicy retryPolicy, CancellationToken cancellationToken)
         {
             IList<AssetFileMetadata> assetFileMetadataList = new List<AssetFileMetadata>();

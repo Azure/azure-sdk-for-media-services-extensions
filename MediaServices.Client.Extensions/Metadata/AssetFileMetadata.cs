@@ -69,6 +69,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
 
             return assetFileMetadata;
         }
+
         private static IEnumerable<Source> ParseSources(XElement sourcesElement)
         {
             IEnumerable<Source> sources = null;

@@ -51,6 +51,11 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
         public string Codec { get; internal set; }
 
         /// <summary>
+        /// Get the language.
+        /// </summary>
+        public string Language { get; internal set; }
+
+        /// <summary>
         /// Get the optional encoder version string, required for EAC3.
         /// </summary>
         public string EncoderVersion { get; internal set; }
@@ -71,6 +76,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client.Metadata
             audioTrack.SamplingRate = audioTrackElement.GetAttributeAsIntOrDefault(AssetMetadataParser.SamplingRateAttributeName);
             audioTrack.BitsPerSample = audioTrackElement.GetAttributeAsIntOrDefault(AssetMetadataParser.BitsPerSampleAttributeName);
             audioTrack.EncoderVersion = audioTrackElement.GetAttributeOrDefault(AssetMetadataParser.EncoderVersionAttributeName);
+            audioTrack.Language = audioTrackElement.GetAttributeOrDefault(AssetMetadataParser.LanguageAttributeName);
 
             return audioTrack;
         }

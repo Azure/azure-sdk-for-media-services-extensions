@@ -85,6 +85,5 @@ namespace MediaServices.Client.Extensions.Tests
 
             Assert.IsNull(parsedException);
         }
-
     }
 }

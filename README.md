@@ -60,7 +60,7 @@ IAsset asset = context.Assets.CreateFromFolder(folderPath, assetCreationOptions)
 ```
 
 ### Create an Asset from a blob
-Create a new asset by copying a source blob using a single extension method for the [AssetBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection.aspx) class. There are additional overloads with different parameters and _async_ support.
+Create a new asset by copying a source blob using a single extension method for the [AssetBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection(v=azure.10).aspx) class. There are additional overloads with different parameters and _async_ support.
 
 This extension method works with a source blob belonging to any Storage account (not necessary bound to the Media Services account and even across different datacenters).
 

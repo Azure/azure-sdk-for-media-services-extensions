@@ -3,7 +3,7 @@ echo Copying Media SDK signed managed DLLs and the pdbs to the final drop locati
 echo Creating \drop\WAMSSDKEXT\lib\net45
 md .\drop\WAMSSDKEXT\lib\net45
 echo Copy MediaServices.Client.Extensions.dll
-copy /y \\adxsdkbuilder\Signed\Microsoft.WindowsAzure.MediaServices.Client.Extensions.dll .\drop\WAMSSDKEXT\lib\net45\
+copy /y \\adxsdkbuilder2\Signed\Microsoft.WindowsAzure.MediaServices.Client.Extensions.dll .\drop\WAMSSDKEXT\lib\net45\
 echo Copy MediaServices.Client.pdb
 copy /y .\Publish\Build\Release\Microsoft.WindowsAzure.MediaServices.Client.Extensions.pdb .\drop\WAMSSDKEXT\lib\net45\
 echo Copy Nuget spec

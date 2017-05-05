@@ -81,10 +81,6 @@ namespace MediaServices.Client.Extensions.Tests.Mocks
 
         public override StreamingFilterBaseCollection Filters { get { throw new NotImplementedException(); } }
 
-        public override ChannelMetricsCollection ChannelMetrics { get { throw new NotImplementedException(); } }
-
         public override MonitoringConfigurationCollection MonitoringConfigurations { get { throw new NotImplementedException(); } }
-
-        public override StreamingEndPointRequestLogCollection StreamingEndPointRequestLogs { get { throw new NotImplementedException(); } }
     }
 }

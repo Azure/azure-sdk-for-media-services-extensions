@@ -77,7 +77,7 @@ namespace Microsoft.WindowsAzure.MediaServices.Client
         /// <returns>A <see cref="System.Threading.Tasks.Task"/> instance for the copy blob operation from <paramref name="sourceBlob"/> to <paramref name="destinationBlob"/>.</returns>
         public static async Task CopyBlobAsync(CloudBlockBlob sourceBlob, CloudBlockBlob destinationBlob, BlobRequestOptions options, CancellationToken cancellationToken)
         {
-            await destinationBlob.StartCopyFromBlobAsync(sourceBlob, null, null, options, null, cancellationToken).ConfigureAwait(false);
+            await destinationBlob.StartCopyAsync(sourceBlob, null, null, options, null, cancellationToken).ConfigureAwait(false);
 
             CopyState copyState = destinationBlob.CopyState;
             while (copyState == null || copyState.Status == CopyStatus.Pending)

@@ -14,7 +14,11 @@ After installing the package, the **Microsoft.WindowsAzure.MediaServices.Client.
 ### Create an empty Asset using a selection strategy for the Storage account
 Create a new empty asset within one selected Storage account based on the default account selection strategy using a single extension method for the [AssetBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection(v=azure.10).aspx) class. There is an additional overload with _async_ support.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // Get a list of the available Storage accounts to select from.
 string[] storageAccountNames = this.context.StorageAccounts.ToList().Select(c => c.Name).ToArray();
@@ -32,7 +36,11 @@ IAsset asset = context.Assets.Create(assetName, storageAccountNames, assetCreati
 ### Create an Asset from a single local file
 Create a new asset by uploading a local file using a single extension method for the [AssetBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection(v=azure.10).aspx) class. There are additional overloads with different parameters and _async_ support.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The local path to the file to upload to the new asset.
 string filePath = @"C:\AssetFile.wmv";
@@ -47,7 +55,11 @@ IAsset asset = context.Assets.CreateFromFile(filePath, assetCreationOptions);
 ### Create an Asset from a local folder
 Create a new asset by uploading all the files in a local folder using a single extension method for the [AssetBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.assetbasecollection(v=azure.10).aspx) class. There are additional overloads with different parameters and _async_ support.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The path to an existing local folder with the files to upload to the new asset.
 string folderPath = @"C:\AssetFilesFolder";
@@ -65,7 +77,12 @@ Create a new asset by copying a source blob using a single extension method for 
 This extension method works with a source blob belonging to any Storage account (not necessary bound to the Media Services account and even across different datacenters).
 
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
+
 StorageCredentials storageCredentials = new StorageCredentials("%storageAccountName%", "%storageAccountKey%");
 
 // Get a reference to the source blob that will be copied in the new asset.
@@ -84,7 +101,11 @@ This extension method works with:
 * Source and destination assets belonging to different Media Services accounts (even across different datacenters)
 
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // Get a reference to the source asset.
 string sourceAssetId = "%sourceAssetId%";
@@ -101,7 +122,11 @@ sourceAsset.Copy(destinationAsset, destinationStorageCredentials);
 ### Generate Asset Files from Blob storage
 Generate the asset files of an existing asset using a single extension method for the [IAsset](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset(v=azure.10).aspx) interface. You can use this method after uploading content directly to the asset container in Azure Blob storage. This method leverages the [CreateFileInfos REST API Function](https://msdn.microsoft.com/library/azure/jj683097(v=azure.10).aspx#createfileinfos). There is an additional overload with _async_ support.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // Create an empty asset.
 IAsset asset = context.Assets.Create("MyAssetName", AssetCreationOptions.None);
@@ -117,7 +142,11 @@ asset.GenerateFromStorage();
 ### Download Asset Files to a local folder
 Download all the asset files in an asset using a single extension method for the [IAsset](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.iasset(v=azure.10).aspx) interface. There are additional overloads with different parameters and _async_ support.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The asset with the asset files to download. Get a reference to it from the context.
 IAsset asset = null;
@@ -168,7 +197,11 @@ IAssetFile manifestAssetFile = asset.GetManifestAssetFile();
 ### Create a Locator
 Create a locator and its associated access policy using a single extension method for the [LocatorBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.locatorbasecollection(v=azure.10).aspx) class. There are additional overloads with different parameters and _async_ support.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The asset used to create the locator. Get a reference to it from the context.
 IAsset asset = null;
@@ -290,7 +323,11 @@ Uri sasUri = assetFile.GetSasUri();
 ### Get latest Media Processor by name
 Get the latest version of a media processor filtering by its name using a single extension method for the [MediaProcessorBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.mediaprocessorbasecollection(v=azure.10).aspx) class.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The media processor name.
 string mediaEncoderStandardProcessorName = MediaProcessorNames.MediaEncoderStandard;
@@ -320,7 +357,11 @@ IMediaProcessor azureMediaVideoThumbnailsProcessor = context.MediaProcessors.Get
 ### Create a Job with a single Task
 Create a job with a single task ready to be submitted using a single extension method for the [JobBaseCollection](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.jobbasecollection(v=azure.10).aspx) class. There is an additional overload with different parameters. 
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The media processor name used in the job's task.
 string mediaProcessorName = MediaProcessorNames.MediaEncoderStandard;
@@ -347,7 +388,11 @@ IJob job = context.Jobs.CreateWithSingleTask(mediaProcessorName, taskConfigurati
 ### Start Job execution progress task to notify when its state or overall progress change
 Start a [Task](https://msdn.microsoft.com/library/system.threading.tasks.task(v=azure.10).aspx) to monitor a job progress using a single extension method for the [IJob](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ijob(v=azure.10).aspx) interface. The difference with the [IJob.GetExecutionProgressTask](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ijob.getexecutionprogresstask(v=azure.10).aspx) method is that this extension invokes a callback when the job state or overall progress change. There is an additional overload with different parameters.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The input asset for the task. Get a reference to it from the context.
 IAsset inputAsset = null;
@@ -371,7 +416,11 @@ job = await job.StartExecutionProgressTask(
 ### Get Job overall progress
 Get the overall progress of a job by calculating the average progress of all its tasks using a single extension method for the [IJob](https://msdn.microsoft.com/library/microsoft.windowsazure.mediaservices.client.ijob(v=azure.10).aspx) interface.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // The input asset for the task. Get a reference to it from the context.
 IAsset inputAsset = null;
@@ -394,7 +443,11 @@ double jobOverallProgress = job.GetOverallProgress();
 ### Parse Media Services error messages in XML format
 Parse exceptions with Windows Azure Media Services error messages in XML format.
 ```csharp
-CloudMediaContext context = new CloudMediaContext("%accountName%", "%accountKey%");
+var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here",
+                            new AzureAdClientSymmetricKey("%Client ID Here%", "%Client Secret Here%"),
+                            AzureEnvironments.AzureCloudEnvironment);
+var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
 // Create an empty asset.
 IAsset asset = context.Assets.Create("MyAssetName", AssetCreationOptions.None);

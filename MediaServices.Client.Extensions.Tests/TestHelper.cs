@@ -31,15 +31,75 @@ namespace MediaServices.Client.Extensions.Tests
                 return ConfigurationManager.AppSettings["MediaServiceFragBlobAssetId"];
             }
         }
+        public static string ActiveDirectoryEndpoint
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["ActiveDirectoryEndpoint"];
+            }
+        }
+        public static string MediaServicesResource
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["MediaServicesResource"];
+            }
+        }
+
+        public static string MediaServicesSdkClientId
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["MediaServicesSdkClientId"];
+            }
+        }
+
+        public static string MediaServicesSdkRedirectUri
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["MediaServicesSdkRedirectUri"];
+            }
+        }
+
+        public static string ClientIdForAdAuth
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["ClientIdForAdAuth"];
+            }
+        }
+        public static string ClientSecretForAdAuth
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["ClientSecretForAdAuth"];
+            }
+        }
+
+        public static string MediaServicesAccountCustomApiServerEndpoint
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["MediaServicesAccountCustomApiServerEndpoint"];
+            }
+        }
+
+        private static AzureEnvironment GetSelfDefinedEnvironment()
+        {
+            return new AzureEnvironment(
+                new Uri(ActiveDirectoryEndpoint),
+                MediaServicesResource,
+                MediaServicesSdkClientId,
+                new Uri(MediaServicesSdkRedirectUri));
+        }
 
         public static CloudMediaContext CreateContext()
         {
-            return new CloudMediaContext(
-                new Uri(ConfigurationManager.AppSettings["MediaServicesUri"]),
-                ConfigurationManager.AppSettings["MediaServiceAccountName"],
-                ConfigurationManager.AppSettings["MediaServiceAccountKey"],
-                ConfigurationManager.AppSettings["MediaServicesAccessScope"],
-                ConfigurationManager.AppSettings["MediaServicesAcsBaseAddress"]);
+            var environment = GetSelfDefinedEnvironment();
+            var tokenCredentials = new AzureAdTokenCredentials(ConfigurationManager.AppSettings["UserTenant"], new AzureAdClientSymmetricKey(ClientIdForAdAuth, ClientSecretForAdAuth), environment);
+            var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+            return new CloudMediaContext(new Uri(MediaServicesAccountCustomApiServerEndpoint), tokenProvider);
         }
 
         public static StorageCredentials CreateStorageCredentials()

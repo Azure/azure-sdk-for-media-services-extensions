@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>windowsazure.mediaservices.extensions</id>
-    <version>4.0.0.4</version>
+    <version>4.1.0.0</version>
     <title>Windows Azure Media Services .NET SDK Extensions</title>
     <authors>Microsoft Corporation</authors>
     <owners>Microsoft Corporation</owners>
@@ -14,7 +14,6 @@
     <language>en-US</language>
     <tags>windowsazureofficial Microsoft WindowsAzure MediaServices</tags>
     <dependencies>
-
       <dependency id="Microsoft.Data.OData" version="5.6.4" />
       <dependency id="Microsoft.Data.Edm" version="5.6.4" />
       <dependency id="Microsoft.Data.Services.Client" version="5.6.4" />
@@ -22,7 +21,7 @@
       <dependency id="TransientFaultHandling.Core" version="5.1.1209.1" />
       <dependency id="WindowsAzure.Storage" version="4.3.0.0" />
       <dependency id="Newtonsoft.Json" version="6.0.8.0" />
-      <dependency id="windowsazure.mediaservices" version="4.0.0.4" />
+      <dependency id="windowsazure.mediaservices" version="4.1.0.0" />
     </dependencies>
   </metadata>
 </package>

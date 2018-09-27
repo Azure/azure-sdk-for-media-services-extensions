@@ -4,13 +4,14 @@
     <id>windowsazure.mediaservices.extensions</id>
     <version>4.2.0</version>
     <title>Windows Azure Media Services .NET SDK Extensions</title>
-    <authors>Microsoft Corporation</authors>
-    <owners>Microsoft Corporation</owners>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+	<copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <projectUrl>https://github.com/WindowsAzure/azure-sdk-for-media-services-extensions</projectUrl>
     <iconUrl>http://nimbuspmteam.blob.core.windows.net/nuget/Media%20Services%20150.png</iconUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+	<licenseUrl>http://go.microsoft.com/fwlink/?LinkID=272666&amp;clcid=0x409</licenseUrl>
     <description>A NuGet package that contains a set of extension methods and helpers for the Windows Azure Media Services SDK for .NET.</description>
-    <copyright>Copyright 2013 Microsoft Corporation. All Rights Reserved</copyright>
     <language>en-US</language>
     <tags>windowsazureofficial Microsoft WindowsAzure MediaServices</tags>
     <dependencies>

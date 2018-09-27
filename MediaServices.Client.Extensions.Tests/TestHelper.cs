@@ -97,9 +97,12 @@ namespace MediaServices.Client.Extensions.Tests
         public static CloudMediaContext CreateContext()
         {
             var environment = GetSelfDefinedEnvironment();
-            var tokenCredentials = new AzureAdTokenCredentials(ConfigurationManager.AppSettings["UserTenant"], new AzureAdClientSymmetricKey(ClientIdForAdAuth, ClientSecretForAdAuth), environment);
+            var clientId = ConfigurationManager.AppSettings["ClientIdForAdAuth"];
+            var clientCertificateThumbprint = ConfigurationManager.AppSettings["ClientCertificateThumbprintForAdAuth"];
+            var tokenCredentials = new AzureAdTokenCredentials(ConfigurationManager.AppSettings["UserTenant"], new AzureAdClientCertificate(clientId, clientCertificateThumbprint), environment);
             var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
-            return new CloudMediaContext(new Uri(MediaServicesAccountCustomApiServerEndpoint), tokenProvider);
+
+            return new CloudMediaContext(new Uri(ConfigurationManager.AppSettings["MediaServicesAccountCustomApiServerEndpoint"]), tokenProvider);
         }
 
         public static StorageCredentials CreateStorageCredentials()

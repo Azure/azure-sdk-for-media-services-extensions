@@ -83,7 +83,8 @@ var tokenCredentials = new AzureAdTokenCredentials("%Your AAD Tenant Domain Here
 var tokenProvider = new AzureAdTokenProvider(tokenCredentials);
 CloudMediaContext context = new CloudMediaContext(new Uri("%Your Rest API Endpoint Here%"), tokenProvider);
 
-StorageCredentials storageCredentials = new StorageCredentials("%storageAccountName%", "%storageAccountKey%");
+// Storage credentials of the Azure Media Service Storage account
+StorageCredentials storageCredentials = new StorageCredentials("%destStorageAccountName%", "%destStorageAccountKey%");
 
 // Get a reference to the source blob that will be copied in the new asset.
 CloudBlockBlob sourceBlob = null;

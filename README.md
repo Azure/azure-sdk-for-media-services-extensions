@@ -9,12 +9,10 @@ After 29 February 2024, Azure Media Services will no longer accept traffic on th
 
 See [Update your Azure Media Services REST API and SDKs to v3 by 29 February 2024](https://azure.microsoft.com/en-us/updates/update-your-azure-media-services-rest-api-and-sdks-to-v3-by-29-february-2024)
 
-# (Deprecated) Windows Azure Media Services SDK .NET 4.5 (REST v2)
+
+# (Deprecated)  Windows Azure Media Services .NET SDK Extensions
 ## This library will be retired after 29 February 2024. Please migrate to the v3 API
 
-Windows Azure Media Services allows you to build a media distribution solution that can stream audio and video to Windows, iOS, Android, and other devices and platforms.To learn more, visit our [Developer Center](http://www.windowsazure.com/en-us/develop/media-services/).
-
-Windows Azure Media Services .NET SDK Extensions
 ================================================
 
 ## What is it?
